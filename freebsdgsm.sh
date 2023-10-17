@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Project: Linux Game Server Managers - LinuxGSM
 # Author: Daniel Gibbs
 # License: MIT License, see LICENSE.md
@@ -25,6 +25,7 @@ shortname="core"
 gameservername="core"
 commandname="CORE"
 rootdir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+compat_datadir="../../compat_data/ssv"
 selfname=$(basename "$(readlink -f "${BASH_SOURCE[0]}")")
 lgsmdir="${rootdir}/lgsm"
 [ -n "${LGSM_LOGDIR}" ] && logdir="${LGSM_LOGDIR}" || logdir="${rootdir}/log"
@@ -37,13 +38,41 @@ tmpdir="${lgsmdir}/tmp"
 lockdir="${lgsmdir}/lock"
 sessionname="${selfname}"
 [ -f "${datadir}/${selfname}.uid" ] && socketname="${sessionname}-$(cat "${datadir}/${selfname}.uid")"
-serverlist="${datadir}/serverlist.csv"
-serverlistmenu="${datadir}/serverlistmenu.csv"
+serverlist="${compat_datadir}/serverlist.ssv"
+serverlistmenu="${compat_datadir}/serverlistmenu.ssv"
 [ -n "${LGSM_CONFIG}" ] && configdir="${LGSM_CONFIG}" || configdir="${lgsmdir}/config-lgsm"
 configdirserver="${configdir}/${gameservername}"
 configdirdefault="${lgsmdir}/config-default"
 userinput="${1}"
 userinput2="${2}"
+
+
+## FREEBSDGSM COMPAT SETTINGS
+fbsdgsm_compat_version="v23.5.3"
+fbsdgsm_compat_shortname="core"
+fbsdgsm_compat_gameservername="core"
+fbsdgsm_compat_commandname="CORE"
+fbsdgsm_compat_rootdir=$(dirname "$(readlink -f "${FBSD_COMPAT_BASH_SOURCE[0]}")")
+fbsdgsm_compat_compat_datadir="../../compat_data/ssv"
+fbsdgsm_compat_selfname=$(basename "$(readlink -f "${FBSD_COMPAT_BASH_SOURCE[0]}")")
+fbsdgsm_compat_lgsmdir="${fbsdgsm_compat_rootdir}/fbsdgsm"
+[ -n "${FBSD_COMPAT_LGSM_LOGDIR}" ] && logdir="${FBSD_COMPAT_LGSM_LOGDIR}" || logdir="${fbsdgsm_compat_rootdir}/fbsd_log"
+fbsdgsm_compat_lgsmlogdir="${fbsdgsm_compat_logdir}/fbsd"
+fbsdgsm_compat_steamcmddir="${HOME}/.steam/steamcmd"
+[ -n "${FBSD_COMPAT_LGSM_SERVERFILES}" ] && fbsdgsm_compat_serverfiles="${FBSD_COMPAT_LGSM_SERVERFILES}" || fbsdgsm_compat_serverfiles="${rootdir}/serverfiles"
+fbsdgsm_compat_modulesdir="${fbsdgsm_compat_lgsmdir}/modules"
+fbsdgsm_compat_tmpdir="${fbsdgsm_compat_lgsmdir}/tmp"
+[ -n "${FBSD_COMPAT_LGSM_DATADIR}" ] && fbsdgsm_compat_datadir="${FBSD_COMPAT_LGSM_DATADIR}" || fbsdgsm_compat_datadir="${lgsmdir}/data"
+fbsdgsm_compat_lockdir="${fbsdgsm_compat_lgsmdir}/lock"
+fbsdgsm_compat_sessionname="${fbsdgsm_compat_selfname}"
+[ -f "${fbsdgsm_compat_datadir}/${selfname}.uid" ] && socketname="${fbsdgsm_compat_sessionname}-$(cat "${fbsdgsm_compat_datadir}/${fbsdgsm_compat_selfname}.uid")"
+fbsdgsm_compat_serverlist="${compat_datadir}/serverlist.ssv"
+fbsdgsm_compat_serverlistmenu="${compat_datadir}/serverlistmenu.ssv"
+[ -n "${FBSD_COMPAT_LGSM_CONFIG}" ] && configdir="${FBSD_COMPAT_LGSM_CONFIG}" || configdir="${fbsdgsm_compat_lgsmdir}/config-lgsm"
+fbsdgsm_compat_configdirserver="${fbsdgsm_compat_configdir}/${fbsdgsm_compat_gameservername}"
+fbsdgsm_compat_configdirdefault="${fbsdgsm_compat_lgsmdir}/config-default"
+fbsdgsm_compat_userinput="${1}"
+fbsdgsm_compat_userinput2="${2}"
 
 ## GitHub Branch Select
 # Allows for the use of different function files
@@ -52,16 +81,40 @@ userinput2="${2}"
 [ -n "${LGSM_GITHUBREPO}" ] && githubrepo="${LGSM_GITHUBREPO}" || githubrepo="LinuxGSM"
 [ -n "${LGSM_GITHUBBRANCH}" ] && githubbranch="${LGSM_GITHUBBRANCH}" || githubbranch="master"
 
+## FREEBSDGSM GitHub Branch Select
+# Allows for the use of different function files
+# from a different repo and/or branch.
+[ -n "${FBSDGSM_GITHUBUSER}" ] && fbsdgsm_githubuser="${FBSDGSM_GITHUBUSER}" || fbsdgsm_githubuser="t2vee"
+[ -n "${FBSDGSM_GITHUBREPO}" ] && fbsdgsm_githubrepo="${FBSDGSM_GITHUBREPO}" || fbsdgsm_githubrepo="FreeBSDGSM"
+[ -n "${FBSDGSM_GITHUBBRANCH}" ] && fbsdgsm_githubbranch="${FBSDGSM_GITHUBBRANCH}" || fbsdgsm_githubbranch="master"
+
 # Check that curl is installed before doing anything
 if [ ! "$(command -v curl 2> /dev/null)" ]; then
 	echo -e "[ FAIL ] Curl is not installed"
-	exit 1
+	. ./compat_scripts/dependency_handling/_install_curl.sh
+	_install_curl
 fi
 
 # Core module that is required first.
-core_modules.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_bootstrap_fetch_file_github "lgsm/modules" "core_modules.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nomd5"
+core_modules_sh() {
+	_dual_core_dependency_check
+}
+
+_dual_core_dependency_check() {
+	if [ -e "${modulesdir}/core_modules.sh" ]; then
+		echo "LinuxGSM core modules file is installed"
+		pass
+	else
+		echo "the LinuxGSM core modules file is missing. attempting to download..."
+		fn_bootstrap_fetch_file_github "lgsm/modules" "core_modules.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nomd5"
+	fi
+		if [ -e "${fbsdgsm_compat_modulesdir}/core_modules.sh" ]; then
+		echo "FreeBSDGSM core modules file is installed"
+		pass
+	else
+		echo "the FreeBSDGSM core modules file is missing. attempting to download..."
+		fn_bootstrap_fetch_file_github "fbsdgsm/modules" "core_modules.sh" "${fbsdgsm_compat_modulesdir}" "chmodx" "run" "noforcedl" "nomd5" "fbsdgsm_hook"
+	fi
 }
 
 # Bootstrap
@@ -274,10 +327,12 @@ fn_install_menu() {
 	eval "$resultvar=\"${selection}\""
 }
 
-# Gets server info from serverlist.csv and puts in to array.
+# Gets server info from serverlist.ssv and puts it into a space separated string.
 fn_server_info() {
 	IFS=","
-	server_info_array=($(grep -aw "${userinput}" "${serverlist}"))
+	. ./compat_scripts/data_handling/_convert_csv.sh
+	convert_csv_to_ssv ${serverlist}
+	server_info_array=($(grep -aw "${userinput}" "${fbsdgsm_compat_serverlist}"))
 	shortname="${server_info_array[0]}"      # csgo
 	gameservername="${server_info_array[1]}" # csgoserver
 	gamename="${server_info_array[2]}"       # Counter Strike: Global Offensive
@@ -508,7 +563,7 @@ else
 		fi
 	}
 
-	# Load the linuxgsm.sh in to tmpdir. If missing download it.
+	# Load the freebsdgsm.sh in to tmpdir. If missing download it.
 	if [ ! -f "${tmpdir}/linuxgsm.sh" ]; then
 		fn_fetch_file_github "" "linuxgsm.sh" "${tmpdir}" "chmodx" "norun" "noforcedl" "nomd5"
 	fi

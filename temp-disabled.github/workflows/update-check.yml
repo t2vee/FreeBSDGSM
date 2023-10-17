@@ -18,14 +18,14 @@ jobs:
         shortname: [css, fctr, jk2, mc, mcb, mta, pmc, ts3, ut99, vints]
 
     steps:
-      - name: Download linuxgsm.sh
-        run: wget https://raw.githubusercontent.com/GameServerManagers/LinuxGSM/${GITHUB_REF#refs/heads/}/linuxgsm.sh; chmod +x linuxgsm.sh
+      - name: Download freebsdgsm.sh
+        run: wget https://raw.githubusercontent.com/GameServerManagers/LinuxGSM/${GITHUB_REF#refs/heads/}/freebsdgsm.sh; chmod +x freebsdgsm.sh
 
       - name: Install dependencies
         run: sudo dpkg --add-architecture i386; sudo apt-get update;
 
       - name: Grab server
-        run: LGSM_GITHUBBRANCH="${GITHUB_REF#refs/heads/}" ./linuxgsm.sh ${{ matrix.shortname }}server
+        run: LGSM_GITHUBBRANCH="${GITHUB_REF#refs/heads/}" ./freebsdgsm.sh ${{ matrix.shortname }}server
 
       - name: Enable developer mode
         run: LGSM_GITHUBBRANCH="${GITHUB_REF#refs/heads/}" ./${{ matrix.shortname }}server developer

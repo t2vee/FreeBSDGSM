@@ -66,7 +66,7 @@ else
 fi
 
 # Check gameserver.sh
-# Compare gameserver.sh against linuxgsm.sh in the tmp dir.
+# Compare gameserver.sh against freebsdgsm.sh in the tmp dir.
 # Ignoring server specific vars.
 echo -en "checking ${selfname}...\c"
 fn_script_log_info "Checking ${selfname}"
