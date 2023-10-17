@@ -1,5 +1,6 @@
 #!/bin/sh
 
+## FREEBSD VERIFIED
 _install_curl() {
   if [ "$(id -u)" -eq 0 ] || command -v pkg > /dev/null; then
     pkg_command="pkg"

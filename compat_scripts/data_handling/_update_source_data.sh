@@ -2,6 +2,7 @@
 # Downloads the latest copy of whatever specified file from the linuxgsm repo
 # These files are required to be converted for freebsdgsm to use
 
+## FREEBSD VERIFIED
 _grab_latest_required_files() {
   if [ $# -ne 1 ]; then
     echo "usage: _grab_latest_required_files <filename>"

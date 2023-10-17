@@ -88,18 +88,21 @@ fbsdgsm_compat_userinput2="${2}"
 [ -n "${FBSDGSM_GITHUBREPO}" ] && fbsdgsm_githubrepo="${FBSDGSM_GITHUBREPO}" || fbsdgsm_githubrepo="FreeBSDGSM"
 [ -n "${FBSDGSM_GITHUBBRANCH}" ] && fbsdgsm_githubbranch="${FBSDGSM_GITHUBBRANCH}" || fbsdgsm_githubbranch="master"
 
+## FREEBSD VERIFIED
 # Check that curl is installed before doing anything
 if [ ! "$(command -v curl 2> /dev/null)" ]; then
-	echo -e "[ FAIL ] Curl is not installed"
+	printf "[ FAIL ] Curl is not installed"
 	. ./compat_scripts/dependency_handling/_install_curl.sh
 	_install_curl
 fi
 
+## FREEBSD VERIFIED
 # Core module that is required first.
 core_modules_sh() {
 	_dual_core_dependency_check
 }
 
+## FREEBSD VERIFIED
 _dual_core_dependency_check() {
 	if [ -e "${modulesdir}/core_modules.sh" ]; then
 		echo "LinuxGSM core modules file is installed"
@@ -117,8 +120,8 @@ _dual_core_dependency_check() {
 	fi
 }
 
-# Bootstrap
-# Fetches the core modules required before passed off to core_dl.sh.
+##//TODO Bootstrap
+##//TODO Fetches the core modules required before passed off to core_dl.sh.
 fn_bootstrap_fetch_file() {
 	remote_fileurl="${1}"
 	remote_fileurl_backup="${2}"
@@ -217,7 +220,7 @@ fn_bootstrap_fetch_file() {
 		fi
 	fi
 }
-
+#//TODO
 fn_bootstrap_fetch_file_github() {
 	github_file_url_dir="${1}"
 	github_file_url_name="${2}"
@@ -241,68 +244,97 @@ fn_bootstrap_fetch_file_github() {
 	fn_bootstrap_fetch_file "${remote_fileurl}" "${remote_fileurl_backup}" "${remote_fileurl_name}" "${remote_fileurl_backup_name}" "${local_filedir}" "${local_filename}" "${chmodx}" "${run}" "${forcedl}" "${md5}"
 }
 
+## FREEBSD VERIFIED
 # Installer menu.
-
 fn_print_center() {
-	columns=$(tput cols)
-	line="$*"
-	printf "%*s\n" $(((${#line} + columns) / 2)) "${line}"
+    columns=${COLUMNS:-80}
+    line="$*"
+    printf "%*s\n" $(((${#line} + columns) / 2)) "${line}"
 }
 
 fn_print_horizontal() {
-	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' "="
+    columns=${COLUMNS:-80}
+    line=""
+    for i in $(seq "$columns"); do
+        line="${line}="
+    done
+    printf "%s\n" "$line"
 }
 
-# Bash menu.
-fn_install_menu_bash() {
-	local resultvar=$1
-	title=$2
-	caption=$3
-	options=$4
-	fn_print_horizontal
-	fn_print_center "${title}"
-	fn_print_center "${caption}"
-	fn_print_horizontal
-	menu_options=()
-	while read -r line || [[ -n "${line}" ]]; do
-		var=$(echo -e "${line}" | awk -F "," '{print $2 " - " $3}')
-		menu_options+=("${var}")
-	done < "${options}"
-	menu_options+=("Cancel")
-	select option in "${menu_options[@]}"; do
-		if [ "${option}" ] && [ "${option}" != "Cancel" ]; then
-			eval "$resultvar=\"${option/%\ */}\""
-		fi
-		break
+## //TODO Verify posix menu actually works
+# B̶a̶s̶h̶ Posix menu baby.
+fn_install_menu_posix() {
+    __local_resultvar=$1
+    title=$2
+    caption=$3
+    options=$4
+    fn_print_horizontal
+    fn_print_center "$title"
+    fn_print_center "$caption"
+    fn_print_horizontal
+    PS3="Select an option (or 'q' to cancel): "
+    menu_options=()
+    index=0
+    while IFS= read -r line; do
+        var=${line%% -*}
+        menu_options["$index"]="$var - ${line#* - }"
+        index=$((index + 1))
+    done < "$options"
+
+    input=""
+
+	i=0
+	while [ -z "$input" ] || [ "$input" -lt 1 ] || [ "$input" -gt "$index" ]; do
+		echo "$PS3"
+		i=0
+		while [ "$i" -lt "$index" ]; do
+			echo "$((i + 1)) ${menu_options[i]}"
+			i=$((i + 1))
+		done
+		read -r input
 	done
+
+
+    if [ "$input" = "q" ]; then
+        echo "Menu canceled."
+    else
+        eval "$__local_resultvar=\"${menu_options[input-1]%% -*}\""
+    fi
 }
 
+
+
+
+
+## FREEBSD FAILED
+
+### NOT GOING TO CONVERT. WHIPTAIL IS NOT DEFAULT ON FREEBSD
 # Whiptail/Dialog menu.
-fn_install_menu_whiptail() {
-	local menucmd=$1
-	local resultvar=$2
-	title=$3
-	caption=$4
-	options=$5
-	height=${6:-40}
-	width=${7:-80}
-	menuheight=${8:-30}
-	IFS=","
-	menu_options=()
-	while read -r line; do
-		key=$(echo -e "${line}" | awk -F "," '{print $3}')
-		val=$(echo -e "${line}" | awk -F "," '{print $2}')
-		menu_options+=("${val//\"/}" "${key//\"/}")
-	done < "${options}"
-	OPTION=$(${menucmd} --title "${title}" --menu "${caption}" "${height}" "${width}" "${menuheight}" "${menu_options[@]}" 3>&1 1>&2 2>&3)
-	if [ $? == 0 ]; then
-		eval "$resultvar=\"${OPTION}\""
-	else
-		eval "$resultvar="
-	fi
-}
+#fn_install_menu_whiptail() {
+#	local menucmd=$1
+#	local resultvar=$2
+#	title=$3
+#	caption=$4
+#	options=$5
+#	height=${6:-40}
+#	width=${7:-80}
+#	menuheight=${8:-30}
+#	IFS=","
+#	menu_options=()
+#	while read -r line; do
+#		key=$(echo -e "${line}" | awk -F "," '{print $3}')
+#		val=$(echo -e "${line}" | awk -F "," '{print $2}')
+#		menu_options+=("${val//\"/}" "${key//\"/}")
+#	done < "${options}"
+#	OPTION=$(${menucmd} --title "${title}" --menu "${caption}" "${height}" "${width}" "${menuheight}" "${menu_options[@]}" 3>&1 1>&2 2>&3)
+#	if [ $? == 0 ]; then
+#		eval "$resultvar=\"${OPTION}\""
+#	else
+#		eval "$resultvar="
+#	fi
+#}
 
-# Menu selector.
+#//TODO Menu selector.
 fn_install_menu() {
 	local resultvar=$1
 	local selection=""
@@ -321,7 +353,7 @@ fn_install_menu() {
 			fn_install_menu_whiptail "${menucmd}" selection "${title}" "${caption}" "${options}" 40 80 30
 			;;
 		*)
-			fn_install_menu_bash selection "${title}" "${caption}" "${options}"
+			fn_install_menu_posix selection "${title}" "${caption}" "${options}"
 			;;
 	esac
 	eval "$resultvar=\"${selection}\""
@@ -340,15 +372,15 @@ fn_server_info() {
 
 fn_install_getopt() {
 	userinput="empty"
-	echo -e "Usage: $0 [option]"
-	echo -e ""
-	echo -e "Installer - Linux Game Server Managers - Version ${version}"
-	echo -e "https://linuxgsm.com"
-	echo -e ""
-	echo -e "Commands"
-	echo -e "install\t\t| Select server to install."
-	echo -e "servername\t| Enter name of game server to install. e.g $0 csgoserver."
-	echo -e "list\t\t| List all servers available for install."
+	printf "Usage: %s$0 [option]"
+	printf ""
+	printf "Installer - Linux Game Server Managers - Version %s${version}"
+	printf "https://linuxgsm.com"
+	printf ""
+	printf "Commands"
+	printf "install%b\t%b\t| Select server to install."
+	printf "servername%b\t| Enter name of game server to install. e.g %s$0 csgoserver."
+	printf "list%b\t%b\t| List all servers available for install."
 	exit
 }
 
@@ -376,7 +408,7 @@ fn_install_file() {
 	exit
 }
 
-# Prevent LinuxGSM from running as root. Except if doing a dependency install.
+#//TODO Prevent LinuxGSM from running as root. Except if doing a dependency install.
 if [ "$(whoami)" == "root" ]; then
 	if [ "${userinput}" == "install" ] || [ "${userinput}" == "auto-install" ] || [ "${userinput}" == "i" ] || [ "${userinput}" == "ai" ]; then
 		if [ "${shortname}" == "core" ]; then
@@ -392,7 +424,7 @@ if [ "$(whoami)" == "root" ]; then
 	fi
 fi
 
-# LinuxGSM installer mode.
+#//TODO LinuxGSM installer mode.
 if [ "${shortname}" == "core" ]; then
 	# Download the latest serverlist. This is the complete list of all supported servers.
 	fn_bootstrap_fetch_file_github "lgsm/data" "serverlist.csv" "${datadir}" "nochmodx" "norun" "forcedl" "nomd5"
@@ -432,7 +464,7 @@ if [ "${shortname}" == "core" ]; then
 		fn_install_getopt
 	fi
 
-# LinuxGSM server mode.
+#//TODO LinuxGSM server mode.
 else
 	core_modules.sh
 	if [ "${shortname}" != "core-dep" ]; then

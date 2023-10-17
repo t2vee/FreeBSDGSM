@@ -7,6 +7,7 @@
 # Grab the latest copy of whatever file for local conversion
 . ./_update_source_data.sh
 
+## FREEBSD VERIFIED
 convert_csv_to_ssv() {
   if [ $# -ne 1 ]; then
     echo "usage: convert_csv_to_ssv <input_csv_file>"
