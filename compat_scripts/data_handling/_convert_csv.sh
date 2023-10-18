@@ -14,7 +14,7 @@ convert_csv_to_ssv() {
     return 1
   fi
   input_csv="$1"
-  project_root="$(dirname $(dirname $(readlink -f $0)))"
+  project_root=$(cd "$(dirname "$0")"; pwd -P) # Alternative to readlink -f
   output_directory="$project_root/compat_data/ssv"
   mkdir -p "$output_directory"
   output_ssv="$output_directory/$(basename "$input_csv" .csv).ssv"
@@ -28,5 +28,10 @@ convert_csv_to_ssv() {
     fi
   fi
   awk 'BEGIN { OFS=" " } { print $0 }' "$input_csv" > "$output_ssv"
+  if [ $? -ne 0 ]; then
+    echo "Error converting CSV to SSV."
+    return 1
+  fi
   echo "CSV file '$input_csv' converted to SSV and saved as '$output_ssv'."
 }
+

@@ -266,16 +266,14 @@ fn_bootstrap_fetch_file() {
 		if [ ! -f "${local_filedir}/${local_filename}" ] || [ "${forcedl}" = "forcedl" ]; then
 			# If backup fileurl exists include it.
 			if [ -n "${remote_fileurl_backup}" ]; then
-				# counter set to 0 to allow second try
 				counter=0
-				remote_fileurls_array=(remote_fileurl remote_fileurl_backup)
+				remote_fileurls_string="remote_fileurl remote_fileurl_backup"
 			else
-				# counter set to 1 to not allow second try
 				counter=1
-				remote_fileurls_array=(remote_fileurl)
+				remote_fileurls_string="remote_fileurl"
 			fi
 
-			for remote_fileurl_array in "${remote_fileurls_array[@]}"; do
+			for remote_fileurl_array in $remote_fileurls_string; do
 				if [ "${remote_fileurl_array}" = "remote_fileurl" ]; then
 					fileurl="${remote_fileurl}"
 					fileurl_name="${remote_fileurl_name}"
@@ -359,51 +357,66 @@ fn_bootstrap_fetch_file() {
 	fi
 }
 
+get_remote_file_url() {
+    _LOCAL_VAR_github_file_url_dir="$1"
+    _LOCAL_VAR_github_file_url_name="$2"
+    _LOCAL_VAR_hook="$3"
+
+    if [ "${prod}" = "false" ]; then
+        if [ "${githubbranch}" = "master" ] && [ "${githubuser}" = "GameServerManagers" ] && [ "${commandname}" != "UPDATE-LGSM" ]; then
+            echo "https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${version}/${_LOCAL_VAR_github_file_url_dir}/${_LOCAL_VAR_github_file_url_name}"
+        else
+            echo "https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${githubbranch}/${_LOCAL_VAR_github_file_url_dir}/${_LOCAL_VAR_github_file_url_name}"
+        fi
+    elif [ "${prod}" = "true" ] || [ "${force_compat}" = "true" ] || [ "${_LOCAL_VAR_hook}" = "fbsdgsm_hook" ]; then
+        echo "https://files.freebsdgsm.org/${_LOCAL_VAR_github_file_url_dir}/${_LOCAL_VAR_github_file_url_name}"
+    fi
+}
+
+# Separate logic for determining the backup remote file URL
+get_remote_backup_file_url() {
+    _LOCAL_VAR_github_file_url_dir="$1"
+    _LOCAL_VAR_github_file_url_name="$2"
+
+    if [ "${prod}" = "false" ]; then
+        echo "https://bitbucket.org/${githubuser}/${githubrepo}/raw/${githubbranch}/${_LOCAL_VAR_github_file_url_dir}/${_LOCAL_VAR_github_file_url_name}"
+    else
+		echo "https://git.files.freebsdgsm.org/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/master/${_LOCAL_VAR_github_file_url_dir}/${_LOCAL_VAR_github_file_url_name}}"
+    fi
+}
+
 fn_bootstrap_fetch_file_github() {
-	github_file_url_dir="${1}"
-	github_file_url_name="${2}"
-	# By default modules will be downloaded from the version release to prevent potential version mixing. Only update-lgsm will allow an update.
-	if [ "${prod}" = "false" ]; then
-		if [ "${githubbranch}" = "master" ] && [ "${githubuser}" = "GameServerManagers" ] && [ "${commandname}" != "UPDATE-LGSM" ]; then
-			remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${version}/${github_file_url_dir}/${github_file_url_name}"
-			remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${version}/${github_file_url_dir}/${github_file_url_name}"
-		else
-			remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
-			remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
-		fi
-	fi
-	fbsdgsm_hook="${8:-0}"
-	# try to get freebsdgsm to use a centralised cdn
-	if [ "${prod}" = "true" ] || [ "${force_compat}" = "true" ] || [ "${fbsdgsm_hook}" = "fbsdgsm_hook" ]; then
-		remote_fileurl="https://files.freebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
-		remote_fileurl_backup="https://git.files.freebsdgsm.org/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/master/${github_file_url_dir}/${github_file_url_name}}"
-	fi
-	remote_fileurl_name="freebsdgsm cdn"
-	remote_fileurl_backup_name="FBSDGSM Git"
-	local_filedir="${3}"
-	local_filename="${github_file_url_name}"
-	chmodx="${4:-0}"
-	run="${5:-0}"
-	forcedl="${6:-0}"
-	md5="${7:-0}"
+    _LOCAL_VAR_github_file_url_dir="${1}"
+    _LOCAL_VAR_github_file_url_name="${2}"
 
-	if [ "${force_compat}" = "true" ]; then
-		dual_compat_install="FORCE"
-	else
-		dual_compat_install="${9}"
-	fi
+    # Determine remote URLs
+    remote_fileurl=$(get_remote_file_url "${_LOCAL_VAR_github_file_url_dir}" "${_LOCAL_VAR_github_file_url_name}" "${fbsdgsm_hook}")
+    remote_fileurl_backup=$(get_remote_backup_file_url "${_LOCAL_VAR_github_file_url_dir}" "${_LOCAL_VAR_github_file_url_name}")
 
-	if [ "${dual_compat_install}" = "FORCE" ]; then
-			dual_remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${version}/${github_file_url_dir}/${github_file_url_name}"
-			dual_remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${version}/${github_file_url_dir}/${github_file_url_name}"
+    remote_fileurl_name="freebsdgsm cdn"
+    remote_fileurl_backup_name="FBSDGSM Git"
+    local_filedir="${3}"
+    local_filename="${_LOCAL_VAR_github_file_url_name}"
+    chmodx="${4:-0}"
+    run="${5:-0}"
+    forcedl="${6:-0}"
+    md5="${7:-0}"
+    fbsdgsm_hook="${8}"
 
-			remote_fileurl="https://files.freebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
-			remote_fileurl_backup="https://git.files.freebsdgsm.org/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/master/${github_file_url_dir}/${github_file_url_name}}"
+    if [ "${force_compat}" = "true" ]; then
+        dual_compat_install="FORCE"
+    else
+        dual_compat_install="${9}"
+    fi
 
-			local_filedir="fbsdgsm/modules"
-	fi
-	# Passes vars to the file download module.
-	fn_bootstrap_fetch_file "${remote_fileurl}" "${remote_fileurl_backup}" "${remote_fileurl_name}" "${remote_fileurl_backup_name}" "${local_filedir}" "${local_filename}" "${chmodx}" "${run}" "${forcedl}" "${md5}" "${dual_compat_install}" "${dual_remote_fileurl}" "${dual_remote_fileurl_backup}"
+    if [ "${dual_compat_install}" = "FORCE" ]; then
+        dual_remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${version}/${_LOCAL_VAR_github_file_url_dir}/${_LOCAL_VAR_github_file_url_name}"
+        dual_remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${version}/${_LOCAL_VAR_github_file_url_dir}/${_LOCAL_VAR_github_file_url_name}"
+        local_filedir="fbsdgsm/modules"
+    fi
+
+    # Passes vars to the file download module.
+    fn_bootstrap_fetch_file "${remote_fileurl}" "${remote_fileurl_backup}" "${remote_fileurl_name}" "${remote_fileurl_backup_name}" "${local_filedir}" "${local_filename}" "${chmodx}" "${run}" "${forcedl}" "${md5}" "${fbsdgsm_hook}" "${dual_compat_install}" "${dual_remote_fileurl}" "${dual_remote_fileurl_backup}"
 }
 
 ## FREEBSD VERIFIED
@@ -430,43 +443,42 @@ fn_install_menu_posix() {
     title=$2
     caption=$3
     options=$4
+
     fn_print_horizontal
     fn_print_center "$title"
     fn_print_center "$caption"
     fn_print_horizontal
+
     PS3="Select an option (or 'q' to cancel): "
+
     menu_options=()
     index=0
     while IFS= read -r line; do
-        var=${line%% -*}
+        var="${line%% -*}"
         menu_options["$index"]="$var - ${line#* - }"
         index=$((index + 1))
     done < "$options"
 
-    input=""
+    while true; do
+        for i in "${!menu_options[@]}"; do
+            echo "$((i + 1)) ${menu_options[i]}"
+        done
 
-	i=0
-	while [ -z "$input" ] || [ "$input" -lt 1 ] || [ "$input" -gt "$index" ]; do
-		echo "$PS3"
-		i=0
-		while [ "$i" -lt "$index" ]; do
-			echo "$((i + 1)) ${menu_options[i]}"
-			i=$((i + 1))
-		done
-		read -r input
-	done
+        echo "$PS3"
+        read -r input
 
+        if [ "$input" = "q" ]; then
+            echo "Menu canceled."
+            return
+        elif [ "$input" -ge 1 ] && [ "$input" -le "$index" ]; then
+            break
+        else
+            echo "Invalid option. Please try again."
+        fi
+    done
 
-    if [ "$input" = "q" ]; then
-        echo "Menu canceled."
-    else
-        eval "$__local_resultvar=\"${menu_options[input-1]%% -*}\""
-    fi
+    eval "$__local_resultvar=\"${menu_options[input-1]%% -*}\""
 }
-
-
-
-
 
 ## FREEBSD FAILED
 
@@ -498,41 +510,69 @@ fn_install_menu_posix() {
 
 
 ###//TODO NEEDS TO BE VERIFIED
-# Menu selector.
 fn_install_menu() {
-	_LOCAL_VAR_resultvar=$1
-	_LOCAL_VAR_selection=""
-	title=$2
-	caption=$3
-	options=$4
-	# Get menu command.
-	for menucmd in whiptail dialog bash; do
-		if [ "$(command -v "${menucmd}")" ]; then
-			menucmd=$(command -v "${menucmd}")
-			break
-		fi
-	done
-	case "$(basename "${menucmd}")" in
-		whiptail | dialog)
-			fn_install_menu_whiptail "${menucmd}" _LOCAL_VAR_selection "${title}" "${caption}" "${options}" 40 80 30
-			;;
-		*)
-			fn_install_menu_posix _LOCAL_VAR_selection "${title}" "${caption}" "${options}"
-			;;
-	esac
-	eval "$_LOCAL_VAR_resultvar=\"${_LOCAL_VAR_selection}\""
+    _LOCAL_VAR_resultvar=$1
+    _LOCAL_VAR_selection=""
+    title=$2
+    caption=$3
+    options=$4
+
+    fn_install_menu_posix _LOCAL_VAR_selection "${title}" "${caption}" "${options}"
+
+    eval "$_LOCAL_VAR_resultvar=\"${_LOCAL_VAR_selection}\""
 }
+#################################################################
+# No longer need this menu selector since the fn_install_menu   #
+# function only really needs to check if bash is present, which #
+# it obviously is if the script is being executed. So the loop  #
+# that checks for the menucmd is not necessary.                 #
+#################################################################
+
+# Menu selector.
+#fn_install_menu() {
+#	_LOCAL_VAR_resultvar=$1
+#	_LOCAL_VAR_selection=""
+#	title=$2
+#	caption=$3
+#	options=$4
+#	# Get menu command.
+#	for menucmd in whiptail dialog bash; do
+#		if [ "$(command -v "${menucmd}")" ]; then
+#			menucmd=$(command -v "${menucmd}")
+#			break
+#		fi
+#	done
+#	case "$(basename "${menucmd}")" in
+#		whiptail | dialog)
+#			fn_install_menu_whiptail "${menucmd}" _LOCAL_VAR_selection "${title}" "${caption}" "${options}" 40 80 30
+#			;;
+#		*)
+#			fn_install_menu_posix _LOCAL_VAR_selection "${title}" "${caption}" "${options}"
+#			;;
+#	esac
+#	eval "$_LOCAL_VAR_resultvar=\"${_LOCAL_VAR_selection}\""
+#}
 
 # Gets server info from serverlist.ssv and puts it into a space separated string.
 fn_server_info() {
-	IFS=","
 	. ./compat_scripts/data_handling/_convert_csv.sh
 	convert_csv_to_ssv ${serverlist}
-	server_info_array=($(grep -aw "${userinput}" "${fbsdgsm_compat_serverlist}"))
-	shortname="${server_info_array[0]}"      # csgo
-	gameservername="${server_info_array[1]}" # csgoserver
-	gamename="${server_info_array[2]}"       # Counter Strike: Global Offensive
+
+	server_info_line=$(grep -aw "${userinput}" "${fbsdgsm_compat_serverlist}")
+
+	if [ "$(echo "$server_info_line" | wc -l)" -ne 1 ]; then
+		echo "Error: Multiple matches or no match found for server."
+		exit 1
+	fi
+
+	set -- $server_info_line
+
+	shortname="$1"
+	gameservername="$2"
+	gamename="$3"
 }
+
+
 
 fn_install_getopt() {
 	userinput="empty"
@@ -558,8 +598,16 @@ fn_install_file() {
 		local_filename="${local_filename}-${i}"
 	fi
 	cp -R "${selfname}" "${local_filename}"
-	sed -i -e "s/shortname=\"core\"/shortname=\"${shortname}\"/g" "${local_filename}"
-	sed -i -e "s/gameservername=\"core\"/gameservername=\"${gameservername}\"/g" "${local_filename}"
+	if [ $? -ne 0 ]; then
+		echo "Error copying ${selfname} to ${local_filename}."
+		exit 1
+	fi
+	sed -i -e "s/shortname=\"core\"/shortname=\"${shortname//\//\\/}\"/g" "${local_filename}"
+	sed -i -e "s/gameservername=\"core\"/gameservername=\"${gameservername//\//\\/}\"/g" "${local_filename}"
+	if [ $? -ne 0 ]; then
+		echo "Error updating the local_filename."
+		exit 1
+	fi
 	printf "Installed %s${gamename} server as %s${local_filename}"
 	printf ""
 	if [ ! -d "${serverfiles}" ]; then
@@ -571,6 +619,7 @@ fn_install_file() {
 	printf ""
 	exit
 }
+
 
 ## FREEBSD VERIFIED
 # Prevent LinuxGSM from running as root. Except if doing a dependency install.
@@ -622,11 +671,11 @@ if [ "${shortname}" = "core" ]; then
 		if [ "${result}" = "${gameservername}" ]; then
 			fn_install_file
 		elif [ "${result}" = "" ]; then
-			prinf "Install canceled"
+			printf "Install canceled"
 		else
-			prinf "[ FAIL ] menu result does not match gameservername"
-			prinf "result: ${result}"
-			prinf "gameservername: ${gameservername}"
+			printf "[ FAIL ] menu result does not match gameservername"
+			printf "result: %s${result}"
+			printf "gameservername: %s${gameservername}"
 		fi
 	elif [ "${userinput}" ]; then
 		fn_server_info
@@ -640,7 +689,7 @@ if [ "${shortname}" = "core" ]; then
 		fn_install_getopt
 	fi
 
-##//TODO kind of complete???
+##//TODO k̶i̶n̶d̶ o̶f̶ c̶o̶m̶p̶l̶e̶t̶e̶?̶?̶?̶ mega broken
 #// LinuxGSM server mode.
 else
 	import_module "core_modules.sh"
@@ -729,7 +778,48 @@ else
 			. "${servercfgfullpath}"
 		fi
 
-		# ... (Rest of your fn_reload_startparameters function remains unchanged)
+		# reload startparameters.
+		if grep -qE "^[[:blank:]]*startparameters=" "${configdirserver}/secrets-${selfname}.cfg"; then
+			eval startparameters="$(sed -nr 's/^ *startparameters=(.*)$/\1/p' "${configdirserver}/secrets-${selfname}.cfg")"
+		elif grep -qE "^[[:blank:]]*startparameters=" "${configdirserver}/${selfname}.cfg"; then
+			eval startparameters="$(sed -nr 's/^ *startparameters=(.*)$/\1/p' "${configdirserver}/${selfname}.cfg")"
+		elif grep -qE "^[[:blank:]]*startparameters=" "${configdirserver}/secrets-common.cfg"; then
+			eval startparameters="$(sed -nr 's/^ *startparameters=(.*)$/\1/p' "${configdirserver}/secrets-common.cfg")"
+		elif grep -qE "^[[:blank:]]*startparameters=" "${configdirserver}/common.cfg"; then
+			eval startparameters="$(sed -nr 's/^ *startparameters=(.*)$/\1/p' "${configdirserver}/common.cfg")"
+		elif grep -qE "^[[:blank:]]*startparameters=" "${configdirserver}/_default.cfg"; then
+			eval startparameters="$(sed -nr 's/^ *startparameters=(.*)$/\1/p' "${configdirserver}/_default.cfg")"
+		fi
+
+		# reload preexecutable.
+		if grep -qE "^[[:blank:]]*preexecutable=" "${configdirserver}/secrets-${selfname}.cfg"; then
+			eval preexecutable="$(sed -nr 's/^ *preexecutable=(.*)$/\1/p' "${configdirserver}/secrets-${selfname}.cfg")"
+		elif grep -qE "^[[:blank:]]*preexecutable=" "${configdirserver}/${selfname}.cfg"; then
+			eval preexecutable="$(sed -nr 's/^ *preexecutable=(.*)$/\1/p' "${configdirserver}/${selfname}.cfg")"
+		elif grep -qE "^[[:blank:]]*preexecutable=" "${configdirserver}/secrets-common.cfg"; then
+			eval preexecutable="$(sed -nr 's/^ *preexecutable=(.*)$/\1/p' "${configdirserver}/secrets-common.cfg")"
+		elif grep -qE "^[[:blank:]]*preexecutable=" "${configdirserver}/common.cfg"; then
+			eval preexecutable="$(sed -nr 's/^ *preexecutable=(.*)$/\1/p' "${configdirserver}/common.cfg")"
+		elif grep -qE "^[[:blank:]]*preexecutable=" "${configdirserver}/_default.cfg"; then
+			eval preexecutable="$(sed -nr 's/^ *preexecutable=(.*)$/\1/p' "${configdirserver}/_default.cfg")"
+		fi
+
+		# For legacy configs that still use parms= 15.03.21
+		if grep -qE "^[[:blank:]]*parms=" "${configdirserver}/secrets-${selfname}.cfg"; then
+			eval parms="$(sed -nr 's/^ *parms=(.*)$/\1/p' "${configdirserver}/secrets-${selfname}.cfg")"
+		elif grep -qE "^[[:blank:]]*parms=" "${configdirserver}/${selfname}.cfg"; then
+			eval parms="$(sed -nr 's/^ *parms=(.*)$/\1/p' "${configdirserver}/${selfname}.cfg")"
+		elif grep -qE "^[[:blank:]]*parms=" "${configdirserver}/secrets-common.cfg"; then
+			eval parms="$(sed -nr 's/^ *parms=(.*)$/\1/p' "${configdirserver}/secrets-common.cfg")"
+		elif grep -qE "^[[:blank:]]*parms=" "${configdirserver}/common.cfg"; then
+			eval parms="$(sed -nr 's/^ *parms=(.*)$/\1/p' "${configdirserver}/common.cfg")"
+		elif grep -qE "^[[:blank:]]*parms=" "${configdirserver}/_default.cfg"; then
+			eval parms="$(sed -nr 's/^ *parms=(.*)$/\1/p' "${configdirserver}/_default.cfg")"
+		fi
+
+		if [ -n "${parms}" ]; then
+			startparameters="${parms}"
+		fi
 	}
 
 	# Load the freebsdgsm.sh in to tmpdir. If missing download it.
