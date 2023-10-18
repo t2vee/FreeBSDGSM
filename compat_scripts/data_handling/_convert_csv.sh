@@ -23,7 +23,7 @@ convert_csv_to_ssv() {
     echo "attempting to download the latest version from LinuxGSM."
     _grab_latest_required_files "$input_csv"
     if [ $? -ne 0 ]; then
-      echo "Fail"
+      echo "fail"
       return 1
     fi
   fi
