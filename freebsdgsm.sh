@@ -10,12 +10,12 @@ DEBUG="true"
 # mega jank and probably still broken
 
 # Debugging
-if [ -f ".dev-debug" ] || [ "${DEBUG}" = "true" ]; then
-	exec 3>&1 4>&2
-	trap 'exec 2>&4 1>&3' 0 1 2 3
-	exec 1>debug.log 2>&1
-	set -x
-fi
+#if [ -f ".dev-debug" ] || [ "${DEBUG}" = "true" ]; then#
+#	exec 3>&1 4>&2
+#	trap 'exec 2>&4 1>&3' 0 1 2 3
+#	exec 1>debug.log 2>&1
+#	set -x
+#fi
 
 debug() {
     [ "$DEBUG" = "true" ] && echo "DEBUG: $*"
@@ -55,8 +55,8 @@ if [ -n "${LGSM_CONFIG}" ]; then
 else
     configdir="${lgsmdir}/config-lgsm"
 fi
-serverlist="${compat_datadir}/serverlist.ssv"
-serverlistmenu="${compat_datadir}/serverlistmenu.ssv"
+serverlist="${datadir}/serverlist.csv"
+serverlistmenu="${datadir}/serverlistmenu.csv"
 [ -n "${LGSM_CONFIG}" ] && configdir="${LGSM_CONFIG}" || configdir="${lgsmdir}/config-lgsm"
 configdirserver="${configdir}/${gameservername}"
 configdirdefault="${lgsmdir}/config-default"
@@ -69,9 +69,9 @@ fbsdgsm_compat_version="v23.5.3"
 fbsdgsm_compat_shortname="core"
 fbsdgsm_compat_gameservername="core"
 fbsdgsm_compat_commandname="CORE"
-fbsdgsm_compat_rootdir=$(dirname "$(readlink -f "${FBSD_COMPAT_BASH_SOURCE[0]}")")
-fbsdgsm_compat_compat_datadir="../../compat_data/ssv"
-fbsdgsm_compat_selfname=$(basename "$(readlink -f "${FBSD_COMPAT_BASH_SOURCE[0]}")")
+fbsdgsm_compat_rootdir=$(cd "$(dirname "$0")" && pwd)
+fbsdgsm_compat_fullpath=$(cd "$(dirname "$0")" && pwd)/$(basename "$0")
+fbsdgsm_compat_selfname=$(basename "$fbsdgsm_compat_fullpath")
 fbsdgsm_compat_lgsmdir="${fbsdgsm_compat_rootdir}/fbsdgsm"
 if [ -n "${FBSD_COMPAT_LGSM_LOGDIR}" ]; then
     logdir="${FBSD_COMPAT_LGSM_LOGDIR}"
@@ -451,7 +451,7 @@ fn_install_menu_posix() {
 
     PS3="Select an option (or 'q' to cancel): "
 
-    menu_options=()
+    menu_options=""
     index=0
     while IFS= read -r line; do
         var="${line%% -*}"
@@ -576,15 +576,19 @@ fn_server_info() {
 
 fn_install_getopt() {
 	userinput="empty"
-	printf "Usage: %s$0 [option]"
-	printf ""
-	printf "Installer - Linux Game Server Managers - Version %s${version}"
-	printf "https://linuxgsm.com"
-	printf ""
-	printf "Commands"
-	printf "install%b\t%b\t| Select server to install."
-	printf "servername%b\t| Enter name of game server to install. e.g %s$0 csgoserver."
-	printf "list%b\t%b\t| List all servers available for install."
+	# need empty lines because the console prints so much garbage
+	# yes i know is a me problem. but its import debug stuff?
+	echo ""
+	echo ""
+	echo "Usage: $0 [option]"
+	echo ""
+	echo "Installer - Linux Game Server Managers - Versions${version}"
+	echo "https://linuxgsm.com"
+	echo ""
+	echo "Commands"
+	echo "install\t\t| Select server to install."
+	echo "servername\t| Enter name of game server to install. e.g $0 csgoserver."
+	echo "list\t\t| List all servers available for install."
 	exit
 }
 ###//TODO NEEDS TO BE VERIFIED
@@ -660,12 +664,12 @@ if [ "${shortname}" = "core" ]; then
 
 	if [ "${userinput}" = "list" ] || [ "${userinput}" = "l" ]; then
 		{
-			tail -n +2 "${serverlist}" | awk -F "," '{print $2 "\t" $3}'
+			tail -n +2 "${fbsdgsm_compat_serverlist}" | awk -F "," '{print $2 "\t" $3}'
 		} | column -s ' ' -t | more
 		exit
 	elif [ "${userinput}" = "install" ] || [ "${userinput}" = "i" ]; then
-		tail -n +2 "${serverlist}" | awk -F "," '{print $1 "," $2 "," $3}' > "${serverlistmenu}"
-		fn_install_menu result "FreeBSDGSM" "Select game server to install." "${serverlistmenu}"
+		tail -n +2 "${fbsdgsm_compat_serverlist}" | awk -F "," '{print $1 "," $2 "," $3}' > "${fbsdgsm_compat_serverlistmenu}"
+		fn_install_menu result "FreeBSDGSM" "Select game server to install." "${fbsdgsm_compat_serverlistmenu}"
 		userinput="${result}"
 		fn_server_info
 		if [ "${result}" = "${gameservername}" ]; then

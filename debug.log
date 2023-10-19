@@ -1,0 +1,98 @@
++ set -x
++ version=v23.5.3
++ shortname=core
++ gameservername=core
++ commandname=CORE
++ realpath ./freebsdgsm.sh
++ dirname /home/lab/FreeBSDGSM/freebsdgsm.sh
++ rootdir=/home/lab/FreeBSDGSM
++ compat_datadir=../../compat_data/ssv
++ realpath ./freebsdgsm.sh
++ basename /home/lab/FreeBSDGSM/freebsdgsm.sh
++ selfname=freebsdgsm.sh
++ lgsmdir=/home/lab/FreeBSDGSM/lgsm
++ [ -n  ]
++ logdir=/home/lab/FreeBSDGSM/log
++ lgsmlogdir=/home/lab/FreeBSDGSM/log/lgsm
++ steamcmddir=/home/lab/.steam/steamcmd
++ [ -n  ]
++ serverfiles=/home/lab/FreeBSDGSM/serverfiles
++ modulesdir=/home/lab/FreeBSDGSM/lgsm/modules
++ tmpdir=/home/lab/FreeBSDGSM/lgsm/tmp
++ [ -n  ]
++ datadir=/home/lab/FreeBSDGSM/lgsm/data
++ lockdir=/home/lab/FreeBSDGSM/lgsm/lock
++ sessionname=freebsdgsm.sh
++ [ -n  ]
++ configdir=/home/lab/FreeBSDGSM/lgsm/config-lgsm
++ serverlist=../../compat_data/ssv/serverlist.ssv
++ serverlistmenu=../../compat_data/ssv/serverlistmenu.ssv
++ [ -n  ]
++ configdir=/home/lab/FreeBSDGSM/lgsm/config-lgsm
++ configdirserver=/home/lab/FreeBSDGSM/lgsm/config-lgsm/core
++ configdirdefault=/home/lab/FreeBSDGSM/lgsm/config-default
++ userinput=
++ userinput2=
++ fbsdgsm_compat_version=v23.5.3
++ fbsdgsm_compat_shortname=core
++ fbsdgsm_compat_gameservername=core
++ fbsdgsm_compat_commandname=CORE
+./freebsdgsm.sh: 72: Bad substitution
++ dirname 
++ fbsdgsm_compat_rootdir=.
++ fbsdgsm_compat_compat_datadir=../../compat_data/ssv
+./freebsdgsm.sh: 74: Bad substitution
++ basename 
++ fbsdgsm_compat_selfname=
++ fbsdgsm_compat_lgsmdir=./fbsdgsm
++ [ -n  ]
++ logdir=./fbsd_log
++ fbsdgsm_compat_lgsmlogdir=/fbsd
++ fbsdgsm_compat_steamcmddir=/home/lab/.steam/steamcmd
++ [ -n  ]
++ fbsdgsm_compat_serverfiles=./serverfiles
++ fbsdgsm_compat_modulesdir=./fbsdgsm/modules
++ fbsdgsm_compat_tmpdir=./fbsdgsm/tmp
++ [ -n  ]
++ fbsdgsm_compat_datadir=./fbsdgsm/data
++ fbsdgsm_compat_lockdir=./fbsdgsm/lock
++ fbsdgsm_compat_sessionname=
++ [ -f ./fbsdgsm/data/freebsdgsm.sh.uid ]
++ fbsdgsm_compat_serverlist=./fbsdgsm/data/serverlist.ssv
++ fbsdgsm_compat_serverlistmenu=./fbsdgsm/data/serverlistmenu.ssv
++ [ -n  ]
++ configdir=./fbsdgsm/config-lgsm
++ fbsdgsm_compat_configdirserver=/core
++ fbsdgsm_compat_configdirdefault=./fbsdgsm/config-default
++ fbsdgsm_compat_userinput=
++ fbsdgsm_compat_userinput2=
++ [ -n  ]
++ prod=true
++ [ -n  ]
++ force_compat=true
++ shacheck_url=https://shacheck.freebsdgsm.org
++ [ -n  ]
++ githubuser=GameServerManagers
++ [ -n  ]
++ githubrepo=LinuxGSM
++ [ -n  ]
++ githubbranch=master
++ [ -n  ]
++ fbsdgsm_githubuser=t2vee
++ [ -n  ]
++ fbsdgsm_githubrepo=FreeBSDGSM
++ [ -n  ]
++ fbsdgsm_githubbranch=master
++ install_dependency curl ./compat_scripts/dependency_handling/_install_curl.sh _curl_command_handling
++ command=curl
++ install_script=./compat_scripts/dependency_handling/_install_curl.sh
++ install_command_handler=_curl_command_handling
++ command -v curl
++ [ ! /usr/bin/curl ]
++ force_sha_integrity_check=0
++ [ 0 -gt 0 ]
++ [ 0 -eq 1 ]
++ echo file integrity checks disabled
+file integrity checks disabled
+./freebsdgsm.sh: 454: Syntax error: "(" unexpected (expecting "}")
++ exec
