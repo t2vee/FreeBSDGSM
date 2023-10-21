@@ -9,6 +9,10 @@
 
 This adaptation is mega jank and a very work in progress. Stuff **will** break. But progress is constantly being made, so keep hopes high!
 
+## 🤔 But why? You may ask
+In reality there really isnt much use to a project like this. To get LinuxGSM to run on freebsd, all you have to do is install bash and change a few apt commands to pkg... BUT, wheres the fun in that! 
+Its also a learning oppotunity for me since I dont actually have that much experience with bash scripting so converting it to sh is fun 👍
+
 ## 🛠 Compatibility
 
 FreeBSDGSM ironically is mainly tested on hardenedbsd and provides the most compatibility for it.
