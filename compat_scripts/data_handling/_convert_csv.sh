@@ -33,13 +33,14 @@ convert_csv_to_ssv() {
       return 1
     fi
   fi
-  awk -F, '{
-      for (i=1; i<=NF; i++) {
-          gsub(/ /, "-", $i);
-      }
-      $1=$1;
-      print
-  }' OFS=" " "$input_csv" > "$output_ssv"
+	awk -F, '{
+		for (i=1; i<=NF; i++) {
+			gsub(/ /, "-", $i);
+		}
+		$1=$1;
+		sub(/[ ]+$/, "", $0);  # This line removes any trailing spaces
+		print
+	}' OFS=" " "$input_csv" > "$output_ssv"
   if [ $? -ne 0 ]; then
     echo "Error converting CSV to SSV."
     return 1

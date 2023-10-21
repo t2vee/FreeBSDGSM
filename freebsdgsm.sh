@@ -165,6 +165,7 @@ else
 fi
 
 
+## TESTED & VERIFIED - 20/10/23
 install_dependency() {
     command="$1"
     install_script="$2"
@@ -178,7 +179,7 @@ install_dependency() {
 }
 
 
-## FREEBSD VERIFIED
+## // TODO NEEDS TO BE VERIFIED
 # Check that curl is installed before doing anything
 install_dependency "curl" "./compat_scripts/dependency_handling/_install_curl.sh" "_curl_command_handling"
 
@@ -206,7 +207,7 @@ else
     echo "file integrity checks disabled"
 fi
 
-## FREEBSD VERIFIED
+## // TODO NEEDS TO BE VERIFIED
 # Core module that is required first.
 import_module() {
 	module="${1}"
@@ -217,7 +218,7 @@ import_module() {
 	fi
 }
 
-## FREEBSD VERIFIED
+## // TODO NEEDS TO BE VERIFIED
 _dual_core_dependency_check() {
 	if [ -e "${modulesdir}/core_modules.sh" ]; then
 		echo "LinuxGSM core modules file is installed"
@@ -235,7 +236,7 @@ _dual_core_dependency_check() {
 	fi
 }
 
-###//TODO NEEDS TO BE VERIFIED
+## TESTED & VERIFIED - 20/10/23
 ## Bootstrap
 # Fetches the core modules required before passed off to core_dl.sh.
 fn_bootstrap_fetch_file() {
@@ -357,6 +358,8 @@ fn_bootstrap_fetch_file() {
 	fi
 }
 
+## TESTED & VERIFIED - 20/10/23
+
 get_remote_file_url() {
     _LOCAL_VAR_github_file_url_dir="$1"
     _LOCAL_VAR_github_file_url_name="$2"
@@ -373,6 +376,7 @@ get_remote_file_url() {
     fi
 }
 
+## TESTED & VERIFIED - 20/10/23
 # Separate logic for determining the backup remote file URL
 get_remote_backup_file_url() {
     _LOCAL_VAR_github_file_url_dir="$1"
@@ -385,6 +389,7 @@ get_remote_backup_file_url() {
     fi
 }
 
+## TESTED & VERIFIED - 20/10/23
 fn_bootstrap_fetch_file_github() {
     _LOCAL_VAR_github_file_url_dir="${1}"
     _LOCAL_VAR_github_file_url_name="${2}"
@@ -419,7 +424,7 @@ fn_bootstrap_fetch_file_github() {
     fn_bootstrap_fetch_file "${remote_fileurl}" "${remote_fileurl_backup}" "${remote_fileurl_name}" "${remote_fileurl_backup_name}" "${local_filedir}" "${local_filename}" "${chmodx}" "${run}" "${forcedl}" "${md5}" "${fbsdgsm_hook}" "${dual_compat_install}" "${dual_remote_fileurl}" "${dual_remote_fileurl_backup}"
 }
 
-## FREEBSD VERIFIED
+## TESTED & VERIFIED - 20/10/23
 # Installer menu.
 fn_print_center() {
     columns=${COLUMNS:-80}
@@ -427,6 +432,7 @@ fn_print_center() {
     printf "%*s\n" $(((${#line} + columns) / 2)) "${line}"
 }
 
+## TESTED & VERIFIED - 20/10/23
 fn_print_horizontal() {
     columns=${COLUMNS:-80}
     line=""
@@ -436,52 +442,48 @@ fn_print_horizontal() {
     printf "%s\n" "$line"
 }
 
-###//TODO NEEDS TO BE VERIFIED
+###//TODO BEING VERIFIED - problems
 # B̶a̶s̶h̶ Posix menu baby.
 fn_install_menu_posix() {
-    __local_resultvar=$1
+    resultvar=$1
     title=$2
     caption=$3
     options=$4
-
     fn_print_horizontal
-    fn_print_center "$title"
-    fn_print_center "$caption"
+    fn_print_center "${title}"
+    fn_print_center "${caption}"
     fn_print_horizontal
 
-    PS3="Select an option (or 'q' to cancel): "
+    # Construct menu
+    count=1
+	while IFS=' ' read -r name name_server description _; do
+		echo "${count}. ${name} - ${name_server} - ${description}"
+		count=$((count + 1))
+	done < "${options}"
 
-    menu_options=""
-    index=0
-    while IFS= read -r line; do
-        var="${line%% -*}"
-        menu_options["$index"]="$var - ${line#* - }"
-        index=$((index + 1))
-    done < "$options"
 
-    while true; do
-        for i in "${!menu_options[@]}"; do
-            echo "$((i + 1)) ${menu_options[i]}"
-        done
 
-        echo "$PS3"
-        read -r input
+    echo "${count}. Cancel"
 
-        if [ "$input" = "q" ]; then
-            echo "Menu canceled."
-            return
-        elif [ "$input" -ge 1 ] && [ "$input" -le "$index" ]; then
-            break
-        else
-            echo "Invalid option. Please try again."
-        fi
-    done
+    # Get user input
+    printf "Select an option (1-${count}): "
+    read selection
 
-    eval "$__local_resultvar=\"${menu_options[input-1]%% -*}\""
+    # Process selection
+    debug "selection"
+    if [ "$selection" -eq "$count" ]; then
+        eval "$resultvar=Cancel"
+    else
+        # Extract the corresponding option
+        debug "selected_option"
+        selected_option=$(sed -n "${selection}" "$options" | awk -F "," '{print $2}')
+        debug "resultvar"
+        eval "$resultvar=$selected_option"
+    fi
 }
 
-## FREEBSD FAILED
 
+## FREEBSD FAILED
 ### NOT GOING TO CONVERT. WHIPTAIL IS NOT DEFAULT ON FREEBSD
 # Whiptail/Dialog menu.
 #fn_install_menu_whiptail() {
@@ -508,7 +510,7 @@ fn_install_menu_posix() {
 #	fi
 #}
 
-
+###//TODO BEING VERIFIED - problems
 ###//TODO NEEDS TO BE VERIFIED
 fn_install_menu() {
     _LOCAL_VAR_resultvar=$1
@@ -553,13 +555,11 @@ fn_install_menu() {
 #	eval "$_LOCAL_VAR_resultvar=\"${_LOCAL_VAR_selection}\""
 #}
 
+###//TODO BEING VERIFIED - problems
 # Gets server info from serverlist.ssv and puts it into a space separated string.
 fn_server_info() {
-	. ./compat_scripts/data_handling/_convert_csv.sh
-	convert_csv_to_ssv ${serverlist}
-
-	server_info_line=$(grep -aw "${userinput}" "${fbsdgsm_compat_serverlist}")
-
+	debug "server_info_line"
+	server_info_line=$(grep "^${userinput} " "${fbsdgsm_compat_serverlist}")
 	if [ "$(echo "$server_info_line" | wc -l)" -ne 1 ]; then
 		echo "Error: Multiple matches or no match found for server."
 		exit 1
@@ -573,11 +573,11 @@ fn_server_info() {
 }
 
 
-
+## TESTED & VERIFIED - 20/10/23
 fn_install_getopt() {
 	userinput="empty"
 	# need empty lines because the console prints so much garbage
-	# yes i know is a me problem. but its import debug stuff?
+	# yes i know its a me problem. but its import debug stuff?
 	echo ""
 	echo ""
 	echo "Usage: $0 [option]"
@@ -591,7 +591,9 @@ fn_install_getopt() {
 	echo "list\t\t| List all servers available for install."
 	exit
 }
-###//TODO NEEDS TO BE VERIFIED
+
+
+###//TODO BEING VERIFIED - problems
 fn_install_file() {
 	local_filename="${gameservername}"
 	if [ -e "${local_filename}" ]; then
@@ -625,7 +627,7 @@ fn_install_file() {
 }
 
 
-## FREEBSD VERIFIED
+## TESTED & VERIFIED - 20/10/23
 # Prevent LinuxGSM from running as root. Except if doing a dependency install.
 if [ "$(whoami)" = "root" ]; then
     if [ "${userinput}" = "install" ] || [ "${userinput}" = "auto-install" ] || [ "${userinput}" = "i" ] || [ "${userinput}" = "ai" ]; then
@@ -642,7 +644,8 @@ if [ "$(whoami)" = "root" ]; then
     fi
 fi
 
-###//TODO NEEDS TO BE VERIFIED
+
+###//TODO BEING VERIFIED - problems
 # LinuxGSM installer mode.
 if [ "${shortname}" = "core" ]; then
 	# Download the latest serverlist. This is the complete list of all supported servers.
@@ -693,7 +696,7 @@ if [ "${shortname}" = "core" ]; then
 		fn_install_getopt
 	fi
 
-##//TODO k̶i̶n̶d̶ o̶f̶ c̶o̶m̶p̶l̶e̶t̶e̶?̶?̶?̶ mega broken
+##//TODO k̶i̶n̶d̶ o̶f̶ c̶o̶m̶p̶l̶e̶t̶e̶?̶?̶?̶ mega broken - even more broken???
 #// LinuxGSM server mode.
 else
 	import_module "core_modules.sh"
