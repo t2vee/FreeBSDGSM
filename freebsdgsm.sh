@@ -1,7 +1,7 @@
 #!/bin/sh
 # Project: FreeBSDGSM - The LinuxGSM Compatibility Project
 # Author: t2vee
-# License: MIT License, see LICENSE.md
+# License: GPL License, see LICENSE_fbsdgsm. For Original Codebase, see LICENSE_lgsm.
 # Purpose: FreeBSD Game Server Management Script. Mainly a translation from Bash to POSIX sh.
 # Credit: This Project is Based Upon LinuxGSM By Daniel Gibbs
 
