@@ -1,6 +1,9 @@
 <p align="center">
 	<a href="https://linuxgsm.com"><img src="https://cdn.t2v.city/content/vSKyC7YoiXXpaUMHd76H/freebsdgsm.sh/freebsdgsmv2.webp" alt="LinuxGSM">
-	<img src="https://img.shields.io/badge/i_want-badges_:(-red">
+	<img src="https://img.shields.io/badge/got-badges!_:)_>>-red">
+	<a href="https://developer.valvesoftware.com/wiki/SteamCMD"><img src="https://img.shields.io/badge/SteamCMD-000000?style=flat-square&amp;logo=Steam&amp;logoColor=white" alt="SteamCMD"></a>
+	<a href="https://github.com/t2vee/FreeBSDGSM/blob/main/LICENSE_lgsm"><img alt="Static Badge" src="https://img.shields.io/badge/LinuxGSM_license-MIT-lime?style=flat-square&logo=gpl"></a>
+	<a href="https://github.com/t2vee/FreeBSDGSM/blob/main/LICENSE_fbsdgsm"><img alt="Static Badge" src="https://img.shields.io/badge/FreeBSDGSM_license-GPLv3-darkred?style=flat-square&logo=gpl"></a>
 </p>
 
 **[FreeBSDGSM](https://freebsdgsm.sh) is the LinuxGSM compatibility project for FreeBSD and other BSD based distros**
