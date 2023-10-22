@@ -5,13 +5,10 @@
 # Purpose: FreeBSD Game Server Management Script. Mainly a translation from Bash to POSIX sh.
 # Credit: This Project is Based Upon LinuxGSM By Daniel Gibbs
 
-
-
-# mega jank and probably still broken
-
-
+# mega jank and p̶r̶o̶b̶a̶b̶l̶y̶ s̶t̶i̶l̶l̶ b̶r̶o̶k̶e̶n̶ - no longer broken! (still mega jank though 😁)
 
 version="v23.5.3"
+fgsm_version="UNSTABLE-rolling"
 shortname="core"
 gameservername="core"
 commandname="CORE"
@@ -197,18 +194,19 @@ else
     echo "file integrity checks disabled"
 fi
 
-## // TODO NEEDS TO BE VERIFIED
+###//TODO BEING VERIFIED - problems
 # Core module that is required first.
 import_module() {
 	module="${1}"
 	if [ "${module}" = "core_modules.sh" ]; then
 		_dual_core_dependency_check
-		. ./lgsm/modules/core_modules.sh
+		## No longer require the need to import lgsm modules
+		#. ./lgsm/modules/core_modules.sh
 		. ./fbsdgsm/modules/core_modules.sh
 	fi
 }
 
-## // TODO NEEDS TO BE VERIFIED
+###//TODO BEING VERIFIED - problems
 _dual_core_dependency_check() {
 	if [ -e "${modulesdir}/core_modules.sh" ]; then
 		echo "LinuxGSM core modules file is installed"
@@ -432,7 +430,7 @@ fn_print_horizontal() {
     printf "%s\n" "$line"
 }
 
-###//TODO BEING VERIFIED - problems
+## TESTED & VERIFIED - 23/10/23
 # B̶a̶s̶h̶ Posix menu baby.
 fn_install_menu_posix() {
     resultvar=$1
@@ -460,14 +458,12 @@ fn_install_menu_posix() {
     read selection
 
     # Process selection
-    debug "selection"
     if [ "$selection" -eq "$count" ]; then
         eval "$resultvar=Cancel"
     else
         # Extract the corresponding option
-        debug "selected_option"
-        selected_option=$(sed -n "${selection}" "$options" | awk -F "," '{print $2}')
-        debug "resultvar"
+        # Allow for reading SSV Files
+		selected_option=$(sed -n "${selection}p" "$options" | awk '{print $2}')
         eval "$resultvar=$selected_option"
     fi
 }
@@ -500,8 +496,7 @@ fn_install_menu_posix() {
 #	fi
 #}
 
-###//TODO BEING VERIFIED - problems
-###//TODO NEEDS TO BE VERIFIED
+## TESTED & VERIFIED - 23/10/23
 fn_install_menu() {
     _LOCAL_VAR_resultvar=$1
     _LOCAL_VAR_selection=""
@@ -545,11 +540,10 @@ fn_install_menu() {
 #	eval "$_LOCAL_VAR_resultvar=\"${_LOCAL_VAR_selection}\""
 #}
 
-###//TODO BEING VERIFIED - problems
+## TESTED & VERIFIED - 23/10/23
 # Gets server info from serverlist.ssv and puts it into a space separated string.
 fn_server_info() {
-	debug "server_info_line"
-	server_info_line=$(grep "^${userinput} " "${fbsdgsm_compat_serverlist}")
+	server_info_line=$(grep "${userinput} " "${fbsdgsm_compat_serverlist}")
 	if [ "$(echo "$server_info_line" | wc -l)" -ne 1 ]; then
 		echo "Error: Multiple matches or no match found for server."
 		exit 1
@@ -583,38 +577,49 @@ fn_install_getopt() {
 }
 
 
-###//TODO BEING VERIFIED - problems
+## TESTED & VERIFIED - 23/10/23
 fn_install_file() {
-	local_filename="${gameservername}"
-	if [ -e "${local_filename}" ]; then
-		i=2
-		while [ -e "${local_filename}-${i}" ]; do
-			i=$((i + 1))
-		done
-		local_filename="${local_filename}-${i}"
-	fi
-	cp -R "${selfname}" "${local_filename}"
-	if [ $? -ne 0 ]; then
-		echo "Error copying ${selfname} to ${local_filename}."
-		exit 1
-	fi
-	sed -i -e "s/shortname=\"core\"/shortname=\"${shortname//\//\\/}\"/g" "${local_filename}"
-	sed -i -e "s/gameservername=\"core\"/gameservername=\"${gameservername//\//\\/}\"/g" "${local_filename}"
-	if [ $? -ne 0 ]; then
-		echo "Error updating the local_filename."
-		exit 1
-	fi
-	printf "Installed %s${gamename} server as %s${local_filename}"
-	printf ""
-	if [ ! -d "${serverfiles}" ]; then
-		printf "./%s${local_filename} install"
-	else
-		printf "Remember to check server ports"
-		printf "./%s${local_filename} details"
-	fi
-	printf ""
-	exit
+    local_filename="${gameservername}"
+
+    if [ -e "${local_filename}" ]; then
+        i=2
+        while [ -e "${local_filename}-$i" ]; do
+            i=$(expr $i + 1)
+        done
+        local_filename="${local_filename}-$i"
+    fi
+
+    cp -R "${selfname}" "${local_filename}"
+    if [ $? -ne 0 ]; then
+        echo "Error copying ${selfname} to ${local_filename}."
+        exit 1
+    fi
+
+    escaped_shortname=$(echo "${shortname}" | sed 's_/_\\/_g')
+    sed -i -e "s/shortname=\"core\"/shortname=\"${escaped_shortname}\"/g" "${local_filename}"
+
+    escaped_gameservername=$(echo "${gameservername}" | sed 's_/_\\/_g')
+    sed -i -e "s/gameservername=\"core\"/gameservername=\"${escaped_gameservername}\"/g" "${local_filename}"
+
+    if [ $? -ne 0 ]; then
+        echo "Error updating the local_filename."
+        exit 1
+    fi
+
+    echo "Installed ${gamename} server as ${local_filename}"
+    echo ""
+
+    if [ ! -d "${serverfiles}" ]; then
+        echo "./${local_filename} install"
+    else
+        echo "Remember to check server ports"
+        echo "./${local_filename} details"
+    fi
+
+    echo ""
+    exit
 }
+
 
 
 ## TESTED & VERIFIED - 20/10/23
@@ -635,7 +640,7 @@ if [ "$(whoami)" = "root" ]; then
 fi
 
 
-###//TODO BEING VERIFIED - problems
+## TESTED & VERIFIED - 23/10/23
 # LinuxGSM installer mode.
 if [ "${shortname}" = "core" ]; then
 	# Download the latest serverlist. This is the complete list of all supported servers.
@@ -686,10 +691,11 @@ if [ "${shortname}" = "core" ]; then
 		fn_install_getopt
 	fi
 
-##//TODO k̶i̶n̶d̶ o̶f̶ c̶o̶m̶p̶l̶e̶t̶e̶?̶?̶?̶ mega broken - even more broken???
+##//TODO k̶i̶n̶d̶ o̶f̶ c̶o̶m̶p̶l̶e̶t̶e̶?̶?̶?̶ m̶e̶g̶a̶ b̶r̶o̶k̶e̶n̶ -̶ e̶v̶e̶n̶ m̶o̶r̶e̶ b̶r̶o̶k̶e̶n̶?̶?̶?̶ - getting there, slowly becoming less broken
 #// LinuxGSM server mode.
 else
 	import_module "core_modules.sh"
+	exit 1
 	if [ "${shortname}" != "core-dep" ]; then
 		# Load LinuxGSM configs.
 		# These are required to get all the default variables for the specific server.

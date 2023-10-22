@@ -1,5 +1,5 @@
 # Temporary sh Debugger
-DEBUG="true"
+DEBUG="false"
 
 debug() {
 	var="$1"

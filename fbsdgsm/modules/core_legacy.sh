@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/bin/sh
+
+## FBSDGSM will not support older versions since there isn't really any.
+
+
 # LinuxGSM core_legacy.sh module
 # Author: Daniel Gibbs
 # Contributors: http://linuxgsm.com/contrib

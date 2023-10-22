@@ -1,819 +1,82 @@
-#!/bin/bash
-# LinuxGSM core_modules.sh module
-# Author: Daniel Gibbs
-# Contributors: http://linuxgsm.com/contrib
-# Website: https://linuxgsm.com
+#!/bin/sh
+# FreeBSDGSM core_modules.sh module
 # Description: Defines all modules to allow download and execution of modules using fn_fetch_module.
 # This module is called first before any other module. Without this file other modules will not load.
 
-moduleselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
+abs_path() {
+    case "$1" in
+        /*) printf "%s\n" "$1";;
+        *)  printf "%s\n" "$PWD/$1";;
+    esac
+}
+
+moduleselfname="$(basename "$(abs_path "$0")")"
 
 modulesversion="v23.5.3"
 
 # Core
 
-core_dl.sh() {
-	modulefile="${FUNCNAME[0]}"
-	if [ "$(type fn_fetch_core_dl 2> /dev/null)" ]; then
-		fn_fetch_core_dl "lgsm/modules" "core_dl.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nohash"
+## Core Module Install Function
+i() {
+	module_request="${1}"
+	if [ "${module_request}" = "core_dl.sh" ]; then
+		core_dl_sh
+	fi
+	if [ "${module_request}" = "core_messages.sh" ]; then
+		core_messages_sh
+	fi
+	if [ "${module_request}" = "core_legacy.sh" ]; then
+		core_legacy_sh
+	fi
+	if [ -f "${fbsdgsm_compat_modulesdir}/${module_request}" ]; then
+		. "${fbsdgsm_compat_modulesdir}/${module_request}"
 	else
-		fn_bootstrap_fetch_file_github "lgsm/modules" "core_dl.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nohash"
+		modulefile="${module_request}"
+		fn_fetch_module
 	fi
 }
 
-core_messages.sh() {
-	modulefile="${FUNCNAME[0]}"
-	if [ "$(type fn_fetch_core_dl 2> /dev/null)" ]; then
-		fn_fetch_core_dl "lgsm/modules" "core_messages.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nohash"
+
+
+core_dl_sh() {
+	modulefile="core_dl.sh"
+	if type fn_fetch_core_dl >/dev/null 2>&1; then
+		fn_fetch_core_dl "fbsdgsm/modules" "core_dl.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nohash"
 	else
-		fn_bootstrap_fetch_file_github "lgsm/modules" "core_messages.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nohash"
+		fn_bootstrap_fetch_file_github "fbsdgsm/modules" "core_dl.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nohash"
 	fi
 }
 
-core_legacy.sh() {
-	modulefile="${FUNCNAME[0]}"
-	if [ "$(type fn_fetch_core_dl 2> /dev/null)" ]; then
-		fn_fetch_core_dl "lgsm/modules" "core_legacy.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nohash"
+core_messages_sh() {
+	modulefile="core_messages.sh"
+	if type fn_fetch_core_dl >/dev/null 2>&1; then
+		fn_fetch_core_dl "fbsdgsm/modules" "core_messages.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nohash"
 	else
-		fn_bootstrap_fetch_file_github "lgsm/modules" "core_legacy.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nohash"
+		fn_bootstrap_fetch_file_github "fbsdgsm/modules" "core_messages.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nohash"
 	fi
 }
 
-core_exit.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-core_getopt.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-core_trap.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-core_steamcmd.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-core_github.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-# Commands
-
-command_backup.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_console.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_debug.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_details.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_sponsor.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_postdetails.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_test_alert.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_monitor.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_start.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_stop.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_validate.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_install.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_install_resources_mta.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_squad_license.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_mods_install.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_mods_update.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_mods_remove.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_fastdl.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_ts3_server_pass.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_restart.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_skeleton.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_wipe.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_send.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-# Checks
-
-check.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_config.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_deps.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_executable.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_glibc.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_ip.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_last_update.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_logs.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_permissions.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_root.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_status.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_steamcmd.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_system_dir.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_system_requirements.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_tmuxception.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-check_version.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-# Compress
-
-compress_unreal2_maps.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-compress_ut99_maps.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-# Mods
-
-mods_list.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-mods_core.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-# Dev
-
-command_dev_clear_modules.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_dev_debug.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_dev_details.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_dev_detect_deps.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_dev_detect_glibc.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_dev_detect_ldd.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_dev_query_raw.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-# Fix
-
-fix.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_ark.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_av.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_arma3.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_armar.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_bt.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_bo.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_cmw.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_csgo.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_dst.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_hw.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_ins.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_kf.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_kf2.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_lo.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_mcb.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_mta.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_nmrih.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_onset.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_pvr.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_ro.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_rust.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_rw.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_sfc.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_st.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_steamcmd.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_terraria.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_tf2.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_ut3.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_rust.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_samp.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_sdtd.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_sof2.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_squad.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_ts3.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_ut2k4.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_ut.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_unt.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_vh.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_wurm.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fix_zmr.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-# Info
-
-info_distro.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-info_game.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-info_messages.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-info_stats.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-# Alert
-
-alert.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-alert_discord.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-alert_email.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-alert_ifttt.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-alert_mailgun.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-alert_pushbullet.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-alert_pushover.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-alert_gotify.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-alert_telegram.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-alert_rocketchat.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-alert_slack.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-# Logs
-
-core_logs.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-# Query
-
-query_gamedig.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-# Update
-
-command_update_modules.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_update_linuxgsm.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_update.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-command_check_update.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-update_ts3.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-update_mc.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-update_mcb.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-update_pmc.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-update_mta.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-update_fctr.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-update_jk2.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-update_steamcmd.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-update_vints.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-update_ut99.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-fn_update_modules.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-#
-## Installer modules
-#
-
-fn_autoinstall() {
-	autoinstall=1
-	command_install.sh
-}
-
-install_complete.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_config.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_factorio_save.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_dst_token.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_eula.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_gsquery.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_gslt.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_header.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_logs.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_retry.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_server_dir.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-install_server_files.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_stats.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_steamcmd.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_ts3.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_ts3db.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_ut2k4.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_dl_ut2k4.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
-}
-
-install_ut2k4_key.sh() {
-	modulefile="${FUNCNAME[0]}"
-	fn_fetch_module
+core_legacy_sh() {
+	modulefile="core_legacy.sh"
+	if type fn_fetch_core_dl >/dev/null 2>&1; then
+		fn_fetch_core_dl "fbsdgsm/modules" "core_legacy.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nohash"
+	else
+		fn_bootstrap_fetch_file_github "fbsdgsm/modules" "core_legacy.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nohash"
+	fi
 }
 
 # Calls code required for legacy servers
-core_legacy.sh
+## FBSDGSM will not support older versions
+#i core_legacy.sh
 
 # Creates tmp dir if missing
-if [ ! -d "${tmpdir}" ]; then
-	mkdir -p "${tmpdir}"
+if [ ! -d "${fbsdgsm_compat_tmpdir}" ]; then
+	mkdir -p "${fbsdgsm_compat_tmpdir}"
 fi
 
 # Creates lock dir if missing
-if [ ! -d "${lockdir}" ]; then
-	mkdir -p "${lockdir}"
+if [ ! -d "${fbsdgsm_compat_lockdir}" ]; then
+	mkdir -p "${fbsdgsm_compat_lockdir}"
 fi
 
 # if $USER id missing set to whoami
@@ -822,10 +85,22 @@ if [ -z "${USER}" ]; then
 fi
 
 # Calls on-screen messages (bootstrap)
-core_messages.sh
+i core_messages.sh
+exit 1
 
 #Calls file downloader (bootstrap)
-core_dl.sh
+i core_dl.sh
 
 # Calls the global Ctrl-C trap
-core_trap.sh
+i core_trap.sh
+
+
+### For now FBSDGSM will download all modules regardless.
+module_list="info_stats.sh command_check_update.sh fix_vh.sh query_gamedig.sh command_validate.sh command_mods_remove.sh alert_pushover.sh command_sponsor.sh check_root.sh fix_ut3.sh fix_onset.sh command_restart.sh info_game.sh update_fctr.sh command_backup.sh fix_st.sh fix_arma3.sh command_install_resources_mta.sh fix_cmw.sh fix_ark.sh install_header.sh check_logs.sh query_gsquery.py fix_tf2.sh command_dev_details.sh fix_wurm.sh fix_kf2.sh check_status.sh install_server_files.sh fix_kf.sh install_mta_resources.sh update_ut99.sh mods_list.sh check_glibc.sh fix_av.sh fix_rw.sh fix_bt.sh fix_terraria.sh check_tmuxception.sh install_dst_token.sh command_dev_detect_deps.sh install_ut2k4_key.sh fix_mcb.sh check_system_dir.sh core_logs.sh command_skeleton.sh install_steamcmd.sh core_functions.sh command_update_linuxgsm.sh command_update.sh install_factorio_save.sh command_ts3_server_pass.sh fix_bo.sh command_send.sh fix_lo.sh update_steamcmd.sh command_dev_clear_modules.sh fix_ins.sh fix_sfc.sh fix_csgo.sh alert_discord.sh check_version.sh command_fastdl.sh install_complete.sh alert_telegram.sh check_system_requirements.sh install_squad_license.sh command_dev_debug.sh fix_rust.sh update_mta.sh fix_unt.sh install_config.sh core_github.sh install_stats.sh fix_squad.sh check_config.sh fix_armar.sh alert_mailgun.sh alert.sh check_ip.sh update_mcb.sh alert_pushbullet.sh install_logs.sh command_test_alert.sh command_debug.sh fix_nmrih.sh fix.sh fix_steamcmd.sh compress_ut99_maps.sh info_messages.sh command_mods_update.sh command_details.sh fix_ts3.sh update_jk2.sh alert_gotify.sh update_mc.sh alert_email.sh fix_ro.sh check_steamcmd.sh command_dev_query_raw.sh command_dev_detect_ldd.sh fix_ut.sh fix_samp.sh fix_zmr.sh command_monitor.sh check_last_update.sh install_retry.sh core_exit.sh command_wipe.sh command_mods_install.sh install_server_dir.sh fix_pvr.sh compress_unreal2_maps.sh fix_ut2k4.sh update_ts3.sh mods_core.sh fix_mta.sh command_postdetails.sh check_deps.sh command_dev_detect_glibc.sh info_distro.sh install_eula.sh command_console.sh fix_dst.sh update_vints.sh install_ts3db.sh core_steamcmd.sh update_pmc.sh check.sh command_start.sh fix_sof2.sh alert_ifttt.sh command_stop.sh check_permissions.sh core_getopt.sh check_executable.sh install_gslt.sh alert_rocketchat.sh command_install.sh fix_sdtd.sh alert_slack.sh core_legacy.sh fix_hw.sh"
+modules_install() {
+    for module in ${module_list}
+    do
+        i "$module"
+    done
+}
+modules_install
