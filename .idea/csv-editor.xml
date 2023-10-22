@@ -3,7 +3,21 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
-        <entry key="\serverlist.csv">
+        <entry key="\\wsl$\Ubuntu\home\lab\LinuxGSM\lgsm\data\serverlist.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\\wsl$\Ubuntu\home\lab\LinuxGSM\lgsm\data\serverlistmenu.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\lgsm\data\serverlist.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

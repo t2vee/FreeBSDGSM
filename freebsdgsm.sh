@@ -5,21 +5,11 @@
 # Purpose: FreeBSD Game Server Management Script. Mainly a translation from Bash to POSIX sh.
 # Credit: This Project is Based Upon LinuxGSM By Daniel Gibbs
 
-DEBUG="true"
+
 
 # mega jank and probably still broken
 
-# Debugging
-#if [ -f ".dev-debug" ] || [ "${DEBUG}" = "true" ]; then#
-#	exec 3>&1 4>&2
-#	trap 'exec 2>&4 1>&3' 0 1 2 3
-#	exec 1>debug.log 2>&1
-#	set -x
-#fi
 
-debug() {
-    [ "$DEBUG" = "true" ] && echo "DEBUG: $*"
-}
 
 version="v23.5.3"
 shortname="core"
