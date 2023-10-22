@@ -138,9 +138,9 @@ fn_script_log_update() {
 # [ .... ]
 fn_print_dots() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[ .... ] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[ .... ] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[ .... ] $*"
+		echo "${creeol}[ .... ] $*"
 	fi
 	fn_sleep_time
 }
@@ -152,127 +152,127 @@ fn_print_dots_nl() {
 		echo "${creeol}[ .... ] $*"
 	fi
 	fn_sleep_time
-	echon "\n"
+	echo "\n"
 }
 
 # [  OK  ]
 fn_print_ok() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[${green}  OK  ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[${green}  OK  ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[${green}  OK  ${default}] $*"
+		echo "${creeol}[${green}  OK  ${default}] $*"
 	fi
 	fn_sleep_time
 }
 
 fn_print_ok_nl() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[${green}  OK  ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[${green}  OK  ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[${green}  OK  ${default}] $*"
+		echo "${creeol}[${green}  OK  ${default}] $*"
 	fi
 	fn_sleep_time
-	echon "\n"
+	echo "\n"
 }
 
 # [ FAIL ]
 fn_print_fail() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[${red} FAIL ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[${red} FAIL ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[${red} FAIL ${default}] $*"
+		echo "${creeol}[${red} FAIL ${default}] $*"
 	fi
 	fn_sleep_time
 }
 
 fn_print_fail_nl() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[${red} FAIL ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[${red} FAIL ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[${red} FAIL ${default}] $*"
+		echo "${creeol}[${red} FAIL ${default}] $*"
 	fi
 	fn_sleep_time
-	echon "\n"
+	echo "\n"
 }
 
 # [ ERROR ]
 fn_print_error() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[${red} ERROR ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[${red} ERROR ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[${red} ERROR ${default}] $*"
+		echo "${creeol}[${red} ERROR ${default}] $*"
 	fi
 	fn_sleep_time
 }
 
 fn_print_error_nl() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[${red} ERROR ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[${red} ERROR ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[${red} ERROR ${default}] $*"
+		echo "${creeol}[${red} ERROR ${default}] $*"
 	fi
 	fn_sleep_time
-	echon "\n"
+	echo "\n"
 }
 
 # [ WARN ]
 fn_print_warn() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[${lightyellow} WARN ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[${lightyellow} WARN ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[${lightyellow} WARN ${default}] $*"
+		echo "${creeol}[${lightyellow} WARN ${default}] $*"
 	fi
 	fn_sleep_time
 }
 
 fn_print_warn_nl() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[${lightyellow} WARN ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[${lightyellow} WARN ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[${lightyellow} WARN ${default}] $*"
+		echo "${creeol}[${lightyellow} WARN ${default}] $*"
 	fi
 	fn_sleep_time
-	echon "\n"
+	echo "\n"
 }
 
 # [ INFO ]
 fn_print_info() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[${cyan} INFO ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[${cyan} INFO ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[${cyan} INFO ${default}] $*"
+		echo "${creeol}[${cyan} INFO ${default}] $*"
 	fi
 	fn_sleep_time
 }
 
 fn_print_info_nl() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[${cyan} INFO ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[${cyan} INFO ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[${cyan} INFO ${default}] $*"
+		echo "${creeol}[${cyan} INFO ${default}] $*"
 	fi
 	fn_sleep_time
-	echon "\n"
+	echo "\n"
 }
 
 # [ START ]
 fn_print_start() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[${lightgreen} START ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[${lightgreen} START ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[${lightgreen} START ${default}] $*"
+		echo "${creeol}[${lightgreen} START ${default}] $*"
 	fi
 	fn_sleep_time
 }
 
 fn_print_start_nl() {
 	if [ "${commandaction}" ]; then
-		echon "${creeol}[${lightgreen} START ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
+		echo "${creeol}[${lightgreen} START ${default}] ${commandaction} ${fbsdgsm_compat_selfname}: $*"
 	else
-		echon "${creeol}[${lightgreen} START ${default}] $*"
+		echo "${creeol}[${lightgreen} START ${default}] $*"
 	fi
 	fn_sleep_time
-	echon "\n"
+	echo "\n"
 }
 
 # On-Screen - Interactive messages
@@ -288,7 +288,7 @@ fn_print_header() {
 
 # Complete!
 fn_print_complete() {
-	echon "${green}Complete!${default} $*"
+	echo "${green}Complete!${default} $*"
 	fn_sleep_time
 }
 
@@ -299,7 +299,7 @@ fn_print_complete_nl() {
 
 # Failure!
 fn_print_failure() {
-	echon "${red}Failure!${default} $*"
+	echo "${red}Failure!${default} $*"
 	fn_sleep_time
 }
 
@@ -310,7 +310,7 @@ fn_print_failure_nl() {
 
 # Error!
 fn_print_error2() {
-	echon "${red}Error!${default} $*"
+	echo "${red}Error!${default} $*"
 	fn_sleep_time
 }
 
@@ -321,7 +321,7 @@ fn_print_error2_nl() {
 
 # Warning!
 fn_print_warning() {
-	echon "${lightyellow}Warning!${default} $*"
+	echo "${lightyellow}Warning!${default} $*"
 	fn_sleep_time
 }
 
@@ -332,7 +332,7 @@ fn_print_warning_nl() {
 
 # Information!
 fn_print_information() {
-	echon "${cyan}Information!${default} $*"
+	echo "${cyan}Information!${default} $*"
 	fn_sleep_time
 }
 
@@ -384,7 +384,7 @@ fn_prompt_message() {
 
 # YES
 fn_print_yes_eol() {
-	echon "${cyan}YES${default}"
+	echo "${cyan}YES${default}"
 	fn_sleep_time
 }
 
@@ -395,7 +395,7 @@ fn_print_yes_eol_nl() {
 
 # NO
 fn_print_no_eol() {
-	echon "${red}NO${default}"
+	echo "${red}NO${default}"
 	fn_sleep_time
 }
 
@@ -406,7 +406,7 @@ fn_print_no_eol_nl() {
 
 # OK
 fn_print_ok_eol() {
-	echon "${green}OK${default}"
+	echo "${green}OK${default}"
 	fn_sleep_time
 }
 
@@ -417,7 +417,7 @@ fn_print_ok_eol_nl() {
 
 # FAIL
 fn_print_fail_eol() {
-	echon "${red}FAIL${default}"
+	echo "${red}FAIL${default}"
 	fn_sleep_time
 }
 
@@ -428,7 +428,7 @@ fn_print_fail_eol_nl() {
 
 # ERROR
 fn_print_error_eol() {
-	echon "${red}ERROR${default}"
+	echo "${red}ERROR${default}"
 	fn_sleep_time
 }
 
@@ -439,7 +439,7 @@ fn_print_error_eol_nl() {
 
 # WAIT
 fn_print_wait_eol() {
-	echon "${cyan}WAIT${default}"
+	echo "${cyan}WAIT${default}"
 	fn_sleep_time
 }
 
@@ -450,7 +450,7 @@ fn_print_wait_eol_nl() {
 
 # WARN
 fn_print_warn_eol() {
-	echon "${lightyellow}WARN${default}"
+	echo "${lightyellow}WARN${default}"
 	fn_sleep_time
 }
 
@@ -461,7 +461,7 @@ fn_print_warn_eol_nl() {
 
 # INFO
 fn_print_info_eol() {
-	echon "${cyan}INFO${default}"
+	echo "${cyan}INFO${default}"
 	fn_sleep_time
 }
 
@@ -472,7 +472,7 @@ fn_print_info_eol_nl() {
 
 # QUERYING
 fn_print_querying_eol() {
-	echon "${cyan}QUERYING${default}"
+	echo "${cyan}QUERYING${default}"
 	fn_sleep_time
 }
 
@@ -483,7 +483,7 @@ fn_print_querying_eol_nl() {
 
 # CHECKING
 fn_print_checking_eol() {
-	echon "${cyan}CHECKING${default}"
+	echo "${cyan}CHECKING${default}"
 	fn_sleep_time
 }
 
@@ -494,7 +494,7 @@ fn_print_checking_eol_nl() {
 
 # DELAY
 fn_print_delay_eol() {
-	echon "${green}DELAY${default}"
+	echo "${green}DELAY${default}"
 	fn_sleep_time
 }
 
@@ -505,7 +505,7 @@ fn_print_delay_eol_nl() {
 
 # CANCELED
 fn_print_canceled_eol() {
-	echon "${lightyellow}CANCELED${default}"
+	echo "${lightyellow}CANCELED${default}"
 	fn_sleep_time
 }
 
@@ -516,7 +516,7 @@ fn_print_canceled_eol_nl() {
 
 # REMOVED
 fn_print_removed_eol() {
-	echon "${red}REMOVED${default}"
+	echo "${red}REMOVED${default}"
 	fn_sleep_time
 }
 
@@ -527,7 +527,7 @@ fn_print_removed_eol_nl() {
 
 # UPDATE
 fn_print_update_eol() {
-	echon "${cyan}UPDATE${default}"
+	echo "${cyan}UPDATE${default}"
 	fn_sleep_time
 }
 
