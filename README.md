@@ -38,7 +38,7 @@ But should work on anything similar.
 
 operation is pretty much the same as linuxgsm just using bsd/posix command syntax.
 HIGHLY recommend running fbsdgsm under some form of containerisation.
-bsdpot is [officially supported](https://github.com/t2vee/freebsdgsm-pot) and **can** be a lot more stable then running "bare metal"
+[bsdpot](https://github.com/bsdpot/pot) is [officially supported](https://github.com/t2vee/freebsdgsm-pot) and **can** be a lot more stable then running "bare metal"
 
 ## 👉👈 Support
 
