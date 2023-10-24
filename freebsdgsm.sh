@@ -13,7 +13,6 @@ shortname="core"
 gameservername="core"
 commandname="CORE"
 rootdir=$(dirname "$(realpath "$0")")
-compat_datadir="../../compat_data/ssv"
 selfname=$(basename "$(realpath "$0")")
 lgsmdir="${rootdir}/lgsm"
 if [ -n "${LGSM_LOGDIR}" ]; then
@@ -93,6 +92,7 @@ fi
 fbsdgsm_compat_configdirserver="${fbsdgsm_compat_configdir}/${fbsdgsm_compat_gameservername}"
 fbsdgsm_compat_configdirdefault="${fbsdgsm_compat_lgsmdir}/config-default"
 fbsdgsm_compat_userinput="${1}"
+fbsdgsm_compat_wildcard_userinput="$*"
 fbsdgsm_compat_userinput2="${2}"
 
 if [ -n "${PROD}" ]; then
@@ -168,33 +168,42 @@ install_dependency() {
 
 ## // TODO NEEDS TO BE VERIFIED
 # Check that curl is installed before doing anything
-install_dependency "curl" "./compat_scripts/dependency_handling/_install_curl.sh" "_curl_command_handling"
+install_dependency "curl" "./Compatibility/_install_curl.sh" "_curl_command_handling"
 
 force_sha_integrity_check=0
+command_advanced=0
+plugin_no_load=0
 while [ $# -gt 0 ]; do
     case "$1" in
-        --force-sha-integrity-check)
+        --force-sha-integrity)
             force_sha_integrity_check=1
             ;;
+        --advanced)
+            command_advanced=1
+            ;;
+        --force-no-plugin)
+            plugin_no_load=1
+            ;;
         *)
+            # Handle or ignore other arguments as needed
             ;;
     esac
     shift
 done
 if [ "$force_sha_integrity_check" -eq 1 ]; then
-	install_dependency "shasum" "./compat_scripts/dependency_handling/_install_shasum.sh" "_shasum_command_handling"
+	install_dependency "shasum" "./Compatibility/_install_shasum.sh" "_shasum_command_handling"
 	echo "shasum is installed. sha checks of all files will be completed"
 	echo ""
 	echo "WARNING: IF A CHECK FAILS THE ENTIRE SCRIPT IMMEDIATELY FAILS"
 	echo "USE WITH CAUTION"
 	echo ""
 	echo "loading integrity check script..."
-	. ./extra_utils/_integrity_check.sh
+	. ./Compatibility/_integrity_check.sh
 else
     echo "file integrity checks disabled"
 fi
 
-###//TODO BEING VERIFIED - problems
+## TESTED & VERIFIED - 23/10/23
 # Core module that is required first.
 import_module() {
 	module="${1}"
@@ -213,7 +222,8 @@ _dual_core_dependency_check() {
 		:
 	else
 		echo "the LinuxGSM core modules file is missing. attempting to download..."
-		fn_bootstrap_fetch_file_github "lgsm/modules" "core_modules.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nomd5"
+		echo "lgsm core modules are no longer required. passing download..."
+		#fn_bootstrap_fetch_file_github "lgsm/modules" "core_modules.sh" "${modulesdir}" "chmodx" "run" "noforcedl" "nomd5"
 	fi
 		if [ -e "${fbsdgsm_compat_modulesdir}/core_modules.sh" ]; then
 		echo "FreeBSDGSM core modules file is installed"
@@ -543,7 +553,11 @@ fn_install_menu() {
 ## TESTED & VERIFIED - 23/10/23
 # Gets server info from serverlist.ssv and puts it into a space separated string.
 fn_server_info() {
-	server_info_line=$(grep "${userinput} " "${fbsdgsm_compat_serverlist}")
+	if [ "$1" = userinput2 ]; then
+		server_info_line=$(grep "${userinput2} " "${fbsdgsm_compat_serverlist}")
+	else
+		server_info_line=$(grep "${userinput} " "${fbsdgsm_compat_serverlist}")
+	fi
 	if [ "$(echo "$server_info_line" | wc -l)" -ne 1 ]; then
 		echo "Error: Multiple matches or no match found for server."
 		exit 1
@@ -560,19 +574,39 @@ fn_server_info() {
 ## TESTED & VERIFIED - 20/10/23
 fn_install_getopt() {
 	userinput="empty"
-	# need empty lines because the console prints so much garbage
-	# yes i know its a me problem. but its import debug stuff?
 	echo ""
+	echo "                            Usage: $0 [option]"
 	echo ""
-	echo "Usage: $0 [option]"
+	echo "#################################################################################"
+	echo "#                   Installer - FreeBSD Game Server Managers                    #"
+	echo "#        Running LGSM Version: ${version} & FBSDGSM Version: ${fgsm_version}      #"
+	echo "#                           https://freebsdgsm.org                              #"
+	echo "#################################################################################"
 	echo ""
-	echo "Installer - Linux Game Server Managers - Versions${version}"
-	echo "https://linuxgsm.com"
-	echo ""
-	echo "Commands"
-	echo "install\t\t| Select server to install."
-	echo "servername\t| Enter name of game server to install. e.g $0 csgoserver."
-	echo "list\t\t| List all servers available for install."
+	echo "Commands:"
+	echo "install\t\t\t| Give you a menu of games to choose from"
+	echo "install <servername>\t| Enter name of game server to install. e.g $0 install csgoserver."
+	echo "list\t\t\t| List all servers available for install."
+	echo "plugins\t\t\t| Open the Plugin Manger menu."
+	if [ "$command_advanced" -eq 1 ]; then
+		echo "\t\t\t|"
+		echo "Script Flags: \t\t|"
+		echo "--advanced \t\t| Display options in this menu."
+		echo "--force-sha-integrity \t| Forces the script to cross check the sha256 hashes of every file used."
+		echo "--dry-run \t\t| Runs the script without modifying any files"
+		echo "\t\t\t|"
+		echo "Plugin Flags: \t\t|"
+		echo "--force-no-plugin \t| Forcibly disables autoloading plugins on script run"
+		echo "--container \t\t| Creates the selected server in a freebsd jail. Plugin Name: pot"
+		echo "--vm \t\t\t| Creates the selected server in a qemu virtual machine. Plugin Name: qemu"
+		echo ""
+		echo "NOTE: You must have the 'freebsdgsm-<plugin-name>-plguin' installed"
+		echo "NOTE: You can install plugins via the freebsdgsm pkg repository. See Docs for info"
+	else
+		echo ""
+		echo "Looking for more options? Pass the --advanced flag"
+		echo ""
+	fi
 	exit
 }
 
@@ -634,8 +668,8 @@ if [ "$(whoami)" = "root" ]; then
         echo "[ FAIL ] Do NOT run this script as root!"
         exit 1
     else
-        core_modules.sh
-        check_root.sh
+        import_module "core_modules.sh"
+        import_module "check_root.sh"
     fi
 fi
 
@@ -646,8 +680,13 @@ if [ "${shortname}" = "core" ]; then
 	# Download the latest serverlist. This is the complete list of all supported servers.
 	#fn_bootstrap_fetch_file_github "lgsm/data" "serverlist.csv" "${datadir}" "nochmodx" "norun" "forcedl" "nomd5"
 
+	if [ "${userinput}" = "plugins" ] || [ "${userinput}" = "p" ]; then
+		. ./Plugins/manager.sh
+		plugin_manager
+	fi
+
 	# doing this the more jank way
-	. ./compat_scripts/data_handling/_convert_csv.sh
+	. ./Compatibility/_convert_csv.sh
 
 	convert_csv_to_ssv ${serverlist}
 
@@ -665,6 +704,14 @@ if [ "${shortname}" = "core" ]; then
 			tail -n +2 "${fbsdgsm_compat_serverlist}" | awk -F "," '{print $2 "\t" $3}'
 		} | column -s ' ' -t | more
 		exit
+	elif case "$fbsdgsm_compat_wildcard_userinput" in "install "*) true;; *) false;; esac; then
+		fn_server_info "userinput2"
+		if [ "${userinput2}" = "${gameservername}" ] || [ "${userinput2}" = "${gamename}" ] || [ "${userinput2}" = "${shortname}" ]; then
+        	fn_install_file
+		else
+			printf "[ FAIL ] Unknown game server\n"
+			exit 1
+		fi
 	elif [ "${userinput}" = "install" ] || [ "${userinput}" = "i" ]; then
 		tail -n +2 "${fbsdgsm_compat_serverlist}" | awk -F "," '{print $1 "," $2 "," $3}' > "${fbsdgsm_compat_serverlistmenu}"
 		fn_install_menu result "FreeBSDGSM" "Select game server to install." "${fbsdgsm_compat_serverlistmenu}"
@@ -679,14 +726,7 @@ if [ "${shortname}" = "core" ]; then
 			printf "result: %s${result}"
 			printf "gameservername: %s${gameservername}"
 		fi
-	elif [ "${userinput}" ]; then
-		fn_server_info
-		if [ "${userinput}" = "${gameservername}" ] || [ "${userinput}" = "${gamename}" ] || [ "${userinput}" = "${shortname}" ]; then
-			fn_install_file
-		else
-			printf "[ FAIL ] Unknown game server"
-			exit 1
-		fi
+
 	else
 		fn_install_getopt
 	fi

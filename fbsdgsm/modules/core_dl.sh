@@ -25,7 +25,7 @@ moduleselfname="$(basename "$(abs_path "$0")")"
 
 fn_dl_steamcmd() {
 	fn_print_start_nl "${remotelocation}"
-	fn_script_log_info "${commandaction} ${selfname}: ${remotelocation}"
+	fn_script_log_info "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}"
 	if [ -n "${branch}" ]; then
 		echo "Branch: ${branch}"
 		fn_script_log_info "Branch: ${branch}"
@@ -34,8 +34,8 @@ fn_dl_steamcmd() {
 		echo "Branch password: ${betapassword}"
 		fn_script_log_info "Branch password: ${betapassword}"
 	fi
-	if [ -d "${steamcmddir}" ]; then
-		cd "${steamcmddir}" || exit
+	if [ -d "${fbsdgsm_compat_steamcmddir}" ]; then
+		cd "${fbsdgsm_compat_steamcmddir}" || exit
 	fi
 
 	# Unbuffer will allow the output of steamcmd not buffer allowing a smooth output.
@@ -50,7 +50,7 @@ fn_dl_steamcmd() {
 	fi
 
 	# To do error checking for SteamCMD the output of steamcmd will be saved to a log.
-	steamcmdlog="${lgsmlogdir}/${selfname}-steamcmd.log"
+	steamcmdlog="${fbsdgsm_compat_lgsmlogdir}/${fbsdgsm_compat_selfname}-steamcmd.log"
 
 	# clear previous steamcmd log
 	if [ -f "${steamcmdlog}" ]; then
@@ -96,69 +96,69 @@ fn_dl_steamcmd() {
 		if [ -n "$(grep -i "Error!" "${steamcmdlog}" | tail -1)" ] && [ "$(grep -ic "Error!" "${steamcmdlog}")" -ge "${counter}" ]; then
 			# Not enough space.
 			if [ -n "$(grep "0x202" "${steamcmdlog}" | tail -1)" ]; then
-				fn_print_failure_nl "${commandaction} ${selfname}: ${remotelocation}: Not enough disk space to download server files"
-				fn_script_log_fatal "${commandaction} ${selfname}: ${remotelocation}: Not enough disk space to download server files"
+				fn_print_failure_nl "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Not enough disk space to download server files"
+				fn_script_log_fatal "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Not enough disk space to download server files"
 				core_exit.sh
 				# Not enough space.
 			elif [ -n "$(grep "0x212" "${steamcmdlog}" | tail -1)" ]; then
-				fn_print_failure_nl "${commandaction} ${selfname}: ${remotelocation}: Not enough disk space to download server files"
-				fn_script_log_fatal "${commandaction} ${selfname}: ${remotelocation}: Not enough disk space to download server files"
+				fn_print_failure_nl "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Not enough disk space to download server files"
+				fn_script_log_fatal "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Not enough disk space to download server files"
 				core_exit.sh
 			# Need tp purchase game.
 			elif [ -n "$(grep "No subscription" "${steamcmdlog}" | tail -1)" ]; then
-				fn_print_failure_nl "${commandaction} ${selfname}: ${remotelocation}: Steam account does not have a license for the required game"
-				fn_script_log_fatal "${commandaction} ${selfname}: ${remotelocation}: Steam account does not have a license for the required game"
+				fn_print_failure_nl "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Steam account does not have a license for the required game"
+				fn_script_log_fatal "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Steam account does not have a license for the required game"
 				core_exit.sh
 			# Two-factor authentication failure
 			elif [ -n "$(grep "Two-factor code mismatch" "${steamcmdlog}" | tail -1)" ]; then
-				fn_print_failure_nl "${commandaction} ${selfname}: ${remotelocation}: Two-factor authentication failure"
-				fn_script_log_fatal "${commandaction} ${selfname}: ${remotelocation}: Two-factor authentication failure"
+				fn_print_failure_nl "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Two-factor authentication failure"
+				fn_script_log_fatal "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Two-factor authentication failure"
 				core_exit.sh
 			# Incorrect Branch password
 			elif [ -n "$(grep "Password check for AppId" "${steamcmdlog}" | tail -1)" ]; then
-				fn_print_failure_nl "${commandaction} ${selfname}: ${remotelocation}: betapassword is incorrect"
-				fn_script_log_fatal "${commandaction} ${selfname}: ${remotelocation}: betapassword is incorrect"
+				fn_print_failure_nl "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: betapassword is incorrect"
+				fn_script_log_fatal "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: betapassword is incorrect"
 				core_exit.sh
 			# Update did not finish.
 			elif [ -n "$(grep "0x402" "${steamcmdlog}" | tail -1)" ] || [ -n "$(grep "0x602" "${steamcmdlog}" | tail -1)" ]; then
-				fn_print_error2_nl "${commandaction} ${selfname}: ${remotelocation}: Update required but not completed - check network"
-				fn_script_log_error "${commandaction} ${selfname}: ${remotelocation}: Update required but not completed - check network"
+				fn_print_error2_nl "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Update required but not completed - check network"
+				fn_script_log_error "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Update required but not completed - check network"
 			# Disk write failure.
 			elif [ -n "$(grep "0x606" "${steamcmdlog}" | tail -1)" ] || [ -n "$(grep "0x602" "${steamcmdlog}" | tail -1)" ]; then
-				fn_print_error2_nl "${commandaction} ${selfname}: ${remotelocation}: Disk write failure"
-				fn_script_log_error "${commandaction} ${selfname}: ${remotelocation}: Disk write failure"
+				fn_print_error2_nl "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Disk write failure"
+				fn_script_log_error "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Disk write failure"
 			# Missing update files.
 			elif [ -n "$(grep "0x626" "${steamcmdlog}" | tail -1)" ] || [ -n "$(grep "0x626" "${steamcmdlog}" | tail -1)" ]; then
-				fn_print_error2_nl "${commandaction} ${selfname}: ${remotelocation}: Missing update files"
-				fn_script_log_error "${commandaction} ${selfname}: ${remotelocation}: Missing update files"
+				fn_print_error2_nl "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Missing update files"
+				fn_script_log_error "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Missing update files"
 			else
-				fn_print_error2_nl "${commandaction} ${selfname}: ${remotelocation}: Unknown error occured"
+				fn_print_error2_nl "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Unknown error occured"
 				echo "Please provide content log to LinuxGSM developers https://linuxgsm.com/steamcmd-error"
-				fn_script_log_error "${commandaction} ${selfname}: ${remotelocation}: Unknown error occured"
+				fn_script_log_error "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Unknown error occured"
 			fi
 		elif [ "${exitcode}" != 0 ]; then
-			fn_print_error2_nl "${commandaction} ${selfname}: ${remotelocation}: Exit code: ${exitcode}"
-			fn_script_log_error "${commandaction} ${selfname}: ${remotelocation}: Exit code: ${exitcode}"
+			fn_print_error2_nl "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Exit code: ${exitcode}"
+			fn_script_log_error "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Exit code: ${exitcode}"
 		else
-			fn_print_complete_nl "${commandaction} ${selfname}: ${remotelocation}"
-			fn_script_log_pass "${commandaction} ${selfname}: ${remotelocation}"
+			fn_print_complete_nl "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}"
+			fn_script_log_pass "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}"
 		fi
 
 		if [ "${counter}" -gt "10" ]; then
-			fn_print_failure_nl "${commandaction} ${selfname}: ${remotelocation}: Did not complete the download, too many retrys"
-			fn_script_log_fatal "${commandaction} ${selfname}: ${remotelocation}: Did not complete the download, too many retrys"
+			fn_print_failure_nl "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Did not complete the download, too many retrys"
+			fn_script_log_fatal "${commandaction} ${fbsdgsm_compat_selfname}: ${remotelocation}: Did not complete the download, too many retrys"
 			core_exit.sh
 		fi
 	done
 }
 
-# Emptys contents of the LinuxGSM tmpdir.
+# Emptys contents of the LinuxGSM fbsdgsm_compat_tmpdir.
 fn_clear_tmp() {
 	echo "clearing LinuxGSM tmp directory..."
-	if [ -d "${tmpdir}" ]; then
-		rm -rf "${tmpdir:?}/"*
-		local exitcode=$?
-		if [ "${exitcode}" != 0 ]; then
+	if [ -d "${fbsdgsm_compat_tmpdir}" ]; then
+		rm -rf "${fbsdgsm_compat_tmpdir:?}/"*
+		_LOCAL_VAR_exitcode=$?
+		if [ "${_LOCAL_VAR_exitcode}" != 0 ]; then
 			fn_print_error_eol_nl
 			fn_script_log_error "clearing LinuxGSM tmp directory"
 		else
@@ -260,8 +260,8 @@ fn_dl_extract() {
 			extractcmd=$(unzip -qo -d "${extractdest}" "${local_filedir}/${local_filename}")
 		fi
 	fi
-	local exitcode=$?
-	if [ "${exitcode}" != 0 ]; then
+	_LOCAL_VAR_exitcode=$?
+	if [ "${_LOCAL_VAR_exitcode}" != 0 ]; then
 		fn_print_fail_eol_nl
 		fn_script_log_fatal "Extracting ${local_filename}"
 		if [ -f "${lgsmlog}" ]; then
@@ -317,11 +317,11 @@ fn_check_file() {
 		counter=$((counter + 1))
 		echo "checking ${fileurl_name} ${remote_filename}...\c"
 		curlcmd=$(curl --output /dev/null --silent --head --fail "${fileurl}" 2>&1)
-		local exitcode=$?
+		_LOCAL_VAR_exitcode=$?
 
 		# On first try will error. On second try will fail.
-		if [ "${exitcode}" != 0 ]; then
-			if [ ${counter} -ge 2 ]; then
+		if [ "${_LOCAL_VAR_exitcode}" != 0 ]; then
+			if [ ${_LOCAL_VAR_counter} -ge 2 ]; then
 				fn_print_fail_eol_nl
 				if [ -f "${lgsmlog}" ]; then
 					fn_script_log_fatal "Checking ${remote_filename}"
@@ -632,7 +632,7 @@ fn_dl_latest_release_github() {
 			fn_print_fail_nl "Cannot get version from GitHub API for ${githubreleaseuser}/${githubreleaserepo}"
 			fn_script_log_fatal "Cannot get version from GitHub API for ${githubreleaseuser}/${githubreleaserepo}"
 		else
-			# Fetch file from the remote location from the existing module to the ${tmpdir} for now.
+			# Fetch file from the remote location from the existing module to the ${fbsdgsm_compat_tmpdir} for now.
 			fn_fetch_file "${githubreleasedownloadlink}" "" "${githubreleasefilename}" "" "${githubreleasedownloadpath}" "${githubreleasefilename}"
 		fi
 	fi

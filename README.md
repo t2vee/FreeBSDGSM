@@ -13,7 +13,7 @@
 This adaptation is mega jank and a very work in progress. Stuff **will** break. But progress is constantly being made, so keep hopes high!
 
 ## 🤔 But why? You may ask
-In reality there really isnt much use to a project like this. To get LinuxGSM to run on freebsd, all you have to do is install bash and change a few apt commands to pkg... BUT, wheres the fun in that! 
+In reality there really isnt much use to a project like this. To get LinuxGSM to run on freebsd, all you have to do is install bash and change a few apt commands to pkg... BUT, wheres the fun in that!
 Its also a learning oppotunity for me since I dont actually have that much experience with bash scripting so converting it to sh is fun 👍
 
 ## 🛠 Compatibility
@@ -38,7 +38,7 @@ But should work on anything similar.
 
 operation is pretty much the same as linuxgsm just using bsd/posix command syntax.
 HIGHLY recommend running fbsdgsm under some form of containerisation.
-[bsdpot](https://github.com/bsdpot/pot) is [officially supported](https://github.com/t2vee/freebsdgsm-pot) and **can** be a lot more stable then running "bare metal"
+[bsdpot](https://github.com/bsdpot/pot) is [officially supported](https://github.com/t2vee/FBSDGSM-Containers) and **can** be a lot more stable then running "bare metal"
 
 ## 👉👈 Support
 
