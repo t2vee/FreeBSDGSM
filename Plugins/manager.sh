@@ -129,7 +129,7 @@ disable_plugin() {
 
 disable_plugin_menu() {
     clear  # Clear the screen
-    if [ ! -f "./enabled.ssv" ]; then
+    if [ ! -f "./Plugins/enabled.ssv" ]; then
         echo "No enabled plugins file found!"
         return 1
     fi

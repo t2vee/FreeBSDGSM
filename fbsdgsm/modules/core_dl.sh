@@ -14,6 +14,9 @@
 # fn_fetch_file "${remote_fileurl}" "${remote_fileurl_backup}" "${remote_fileurl_name}" "${remote_fileurl_backup_name}" "${local_filedir}" "${local_filename}" "${chmodx}" "${run}" "${forcedl}" "${hash}"
 # fn_fetch_file "http://example.com/file.tar.bz2" "http://example.com/file2.tar.bz2" "file.tar.bz2" "file2.tar.bz2" "/some/dir" "file.tar.bz2" "chmodx" "run" "forcedl" "10cd7353aa9d758a075c600a6dd193fd"
 
+
+##### //TODO Whole module needs to be verified
+
 abs_path() {
     case "$1" in
         /*) printf "%s\n" "$1";;
@@ -291,186 +294,177 @@ fn_fetch_trap() {
 
 # Will check a file exists and download it. Will not exit if fails to download.
 fn_check_file() {
-	remote_fileurl="${1}"
-	remote_fileurl_backup="${2}"
-	remote_fileurl_name="${3}"
-	remote_fileurl_backup_name="${4}"
-	remote_filename="${5}"
-	# If backup fileurl exists include it.
-	if [ -n "${remote_fileurl_backup}" ]; then
-		# counter set to 0 to allow second try
-		counter=0
-		remote_fileurls_array=(remote_fileurl remote_fileurl_backup)
-	else
-		# counter set to 1 to not allow second try
-		counter=1
-		remote_fileurls_array=(remote_fileurl)
-	fi
-	for remote_fileurl_array in "${remote_fileurls_array[@]}"; do
-		if [ "${remote_fileurl_array}" = "remote_fileurl" ]; then
-			fileurl="${remote_fileurl}"
-			fileurl_name="${remote_fileurl_name}"
-		elif [ "${remote_fileurl_array}" = "remote_fileurl_backup" ]; then
-			fileurl="${remote_fileurl_backup}"
-			fileurl_name="${remote_fileurl_backup_name}"
-		fi
-		counter=$((counter + 1))
-		echo "checking ${fileurl_name} ${remote_filename}...\c"
-		curlcmd=$(curl --output /dev/null --silent --head --fail "${fileurl}" 2>&1)
-		_LOCAL_VAR_exitcode=$?
+    remote_fileurl="$1"
+    remote_fileurl_backup="$2"
+    remote_fileurl_name="$3"
+    remote_fileurl_backup_name="$4"
+    remote_filename="$5"
 
-		# On first try will error. On second try will fail.
-		if [ "${_LOCAL_VAR_exitcode}" != 0 ]; then
-			if [ ${_LOCAL_VAR_counter} -ge 2 ]; then
-				fn_print_fail_eol_nl
-				if [ -f "${lgsmlog}" ]; then
-					fn_script_log_fatal "Checking ${remote_filename}"
-					fn_script_log_fatal "${fileurl}"
-					checkflag=1
-				fi
-			else
-				fn_print_error_eol_nl
-				if [ -f "${lgsmlog}" ]; then
-					fn_script_log_error "Checking ${remote_filename}"
-					fn_script_log_error "${fileurl}"
-					checkflag=2
-				fi
-			fi
-		else
-			fn_print_ok_eol
-			echo "\033[2K\\r"
-			if [ -f "${lgsmlog}" ]; then
-				fn_script_log_pass "Checking ${remote_filename}"
-				checkflag=0
-			fi
-			break
-		fi
-	done
+    # If backup fileurl exists include it.
+    if [ -n "${remote_fileurl_backup}" ]; then
+        # counter set to 0 to allow second try
+        counter=0
+        set -- "$remote_fileurl" "$remote_fileurl_backup"
+    else
+        # counter set to 1 to not allow second try
+        counter=1
+        set -- "$remote_fileurl"
+    fi
 
-	if [ -f "${local_filedir}/${local_filename}" ]; then
-		fn_dl_hash
-		# Execute file if run is set.
-		if [ "${run}" = "run" ]; then
-			# shellcheck source=/dev/null
-			source "${local_filedir}/${local_filename}"
-		fi
-	fi
+    for remote_fileurl_val in "$@"; do
+        if [ "${remote_fileurl_val}" = "${remote_fileurl}" ]; then
+            fileurl="${remote_fileurl}"
+            fileurl_name="${remote_fileurl_name}"
+        else
+            fileurl="${remote_fileurl_backup}"
+            fileurl_name="${remote_fileurl_backup_name}"
+        fi
+        counter=$((counter + 1))
+        printf "checking %s %s...\c" "$fileurl_name" "$remote_filename"
+        curlcmd=$(curl --output /dev/null --silent --head --fail "${fileurl}" 2>&1)
+        _LOCAL_VAR_exitcode=$?
+
+        if [ "${_LOCAL_VAR_exitcode}" != 0 ]; then
+            if [ "$counter" -ge 2 ]; then
+                fn_print_fail_eol_nl
+                if [ -f "${lgsmlog}" ]; then
+                    fn_script_log_fatal "Checking ${remote_filename}"
+                    fn_script_log_fatal "${fileurl}"
+                    checkflag=1
+                fi
+            else
+                fn_print_error_eol_nl
+                if [ -f "${lgsmlog}" ]; then
+                    fn_script_log_error "Checking ${remote_filename}"
+                    fn_script_log_error "${fileurl}"
+                    checkflag=2
+                fi
+            fi
+        else
+            fn_print_ok_eol
+            printf "\033[2K\\r"
+            if [ -f "${lgsmlog}" ]; then
+                fn_script_log_pass "Checking ${remote_filename}"
+                checkflag=0
+            fi
+            break
+        fi
+    done
+
+    if [ -f "${local_filedir}/${local_filename}" ]; then
+        fn_dl_hash
+        if [ "${run}" = "run" ]; then
+            . "${local_filedir}/${local_filename}"
+        fi
+    fi
 }
+
 
 fn_fetch_file() {
-	remote_fileurl="${1}"
-	remote_fileurl_backup="${2}"
-	remote_fileurl_name="${3}"
-	remote_fileurl_backup_name="${4}"
-	local_filedir="${5}"
-	local_filename="${6}"
-	chmodx="${7:-0}"
-	run="${8:-0}"
-	forcedl="${9:-0}"
-	hash="${10:-0}"
+    remote_fileurl="$1"
+    remote_fileurl_backup="$2"
+    remote_fileurl_name="$3"
+    remote_fileurl_backup_name="$4"
+    local_filedir="$5"
+    local_filename="$6"
+    chmodx="${7:-0}"
+    run="${8:-0}"
+    forcedl="${9:-0}"
+    hash="${10:-0}"
 
-	# Download file if missing or download forced.
-	if [ ! -f "${local_filedir}/${local_filename}" ] || [ "${forcedl}" = "forcedl" ]; then
-		# If backup fileurl exists include it.
-		if [ -n "${remote_fileurl_backup}" ]; then
-			# counter set to 0 to allow second try
-			counter=0
-			remote_fileurls_array=(remote_fileurl remote_fileurl_backup)
-		else
-			# counter set to 1 to not allow second try
-			counter=1
-			remote_fileurls_array=(remote_fileurl)
-		fi
-		for remote_fileurl_array in "${remote_fileurls_array[@]}"; do
-			if [ "${remote_fileurl_array}" = "remote_fileurl" ]; then
-				fileurl="${remote_fileurl}"
-				fileurl_name="${remote_fileurl_name}"
-			elif [ "${remote_fileurl_array}" = "remote_fileurl_backup" ]; then
-				fileurl="${remote_fileurl_backup}"
-				fileurl_name="${remote_fileurl_backup_name}"
-			fi
-			counter=$((counter + 1))
-			if [ ! -d "${local_filedir}" ]; then
-				mkdir -p "${local_filedir}"
-			fi
-			# Trap will remove part downloaded files if canceled.
-			trap fn_fetch_trap INT
-			curlcmd=(curl --connect-timeout 10 --fail -L -o "${local_filedir}/${local_filename}" --retry 2)
+    # Download file if missing or download forced.
+    if [ ! -f "${local_filedir}/${local_filename}" ] || [ "${forcedl}" = "forcedl" ]; then
+        if [ -n "${remote_fileurl_backup}" ]; then
+            counter=0
+            set -- "$remote_fileurl" "$remote_fileurl_backup"
+        else
+            counter=1
+            set -- "$remote_fileurl"
+        fi
 
-			# if is large file show progress, else be silent
-			local exitcode=""
-			large_files=("bz2" "gz" "zip" "jar" "xz")
-			if grep -qE "(^|\s)${local_filename##*.}(\s|$)" <<< "${large_files[@]}"; then
-				echo "downloading ${local_filename}..."
-				fn_sleep_time
-				echo "\033[1K"
-				"${curlcmd[@]}" --progress-bar "${fileurl}" 2>&1
-				exitcode="$?"
-			else
-				echo "fetching ${fileurl_name} ${local_filename}...\c"
-				"${curlcmd[@]}" --silent --show-error "${fileurl}" 2>&1
-				exitcode="$?"
-			fi
+        for remote_fileurl_val in "$@"; do
+            if [ "${remote_fileurl_val}" = "${remote_fileurl}" ]; then
+                fileurl="${remote_fileurl}"
+                fileurl_name="${remote_fileurl_name}"
+            else
+                fileurl="${remote_fileurl_backup}"
+                fileurl_name="${remote_fileurl_backup_name}"
+            fi
+            counter=$((counter + 1))
+            if [ ! -d "${local_filedir}" ]; then
+                mkdir -p "${local_filedir}"
+            fi
 
-			# Download will fail if downloads a html file.
-			if [ -f "${local_filedir}/${local_filename}" ]; then
-				if head -n 1 "${local_filedir}/${local_filename}" | grep -q "DOCTYPE"; then
-					rm "${local_filedir:?}/${local_filename:?}"
-					local exitcode=2
-				fi
-			fi
+            trap fn_fetch_trap INT
+            curlcmd="curl --connect-timeout 10 --fail -L -o ${local_filedir}/${local_filename} --retry 2"
 
-			# On first try will error. On second try will fail.
-			if [ "${exitcode}" != 0 ]; then
-				if [ ${counter} -ge 2 ]; then
-					fn_print_fail_eol_nl
-					if [ -f "${lgsmlog}" ]; then
-						fn_script_log_fatal "Downloading ${local_filename}..."
-						fn_script_log_fatal "${fileurl}"
-					fi
-					core_exit.sh
-				else
-					fn_print_error_eol_nl
-					if [ -f "${lgsmlog}" ]; then
-						fn_script_log_error "Downloading ${local_filename}..."
-						fn_script_log_error "${fileurl}"
-					fi
-				fi
-			else
-				fn_print_ok_eol_nl
-				if [ -f "${lgsmlog}" ]; then
-					fn_script_log_pass "Downloading ${local_filename}..."
-				fi
+            ext="${local_filename##*.}"
+            case "$ext" in
+                bz2|gz|zip|jar|xz)
+                    echo "downloading ${local_filename}..."
+                    fn_sleep_time
+                    printf "\033[1K"
+                    $curlcmd --progress-bar "${fileurl}" 2>&1
+                    exitcode="$?"
+                    ;;
+                *)
+                    printf "fetching %s %s...\c" "$fileurl_name" "$local_filename"
+                    $curlcmd --silent --show-error "${fileurl}" 2>&1
+                    exitcode="$?"
+                    ;;
+            esac
 
-				# Make file executable if chmodx is set.
-				if [ "${chmodx}" = "chmodx" ]; then
-					chmod +x "${local_filedir}/${local_filename}"
-				fi
+            if [ -f "${local_filedir}/${local_filename}" ] && head -n 1 "${local_filedir}/${local_filename}" | grep -q "DOCTYPE"; then
+                rm "${local_filedir:?}/${local_filename:?}"
+                exitcode=2
+            fi
 
-				# Remove trap.
-				trap - INT
+            if [ "$exitcode" != 0 ]; then
+                if [ "$counter" -ge 2 ]; then
+                    fn_print_fail_eol_nl
+                    if [ -f "${lgsmlog}" ]; then
+                        fn_script_log_fatal "Downloading ${local_filename}..."
+                        fn_script_log_fatal "${fileurl}"
+                    fi
+                    core_exit.sh
+                else
+                    fn_print_error_eol_nl
+                    if [ -f "${lgsmlog}" ]; then
+                        fn_script_log_error "Downloading ${local_filename}..."
+                        fn_script_log_error "${fileurl}"
+                    fi
+                fi
+            else
+                fn_print_ok_eol_nl
+                if [ -f "${lgsmlog}" ]; then
+                    fn_script_log_pass "Downloading ${local_filename}..."
+                fi
 
-				break
-			fi
-		done
-	fi
+                if [ "$chmodx" = "chmodx" ]; then
+                    chmod +x "${local_filedir}/${local_filename}"
+                fi
 
-	if [ -f "${local_filedir}/${local_filename}" ]; then
-		fn_dl_hash
-		# Execute file if run is set.
-		if [ "${run}" = "run" ]; then
-			# shellcheck source=/dev/null
-			source "${local_filedir}/${local_filename}"
-		fi
-	fi
+                trap - INT
+                break
+            fi
+        done
+    fi
+
+    if [ -f "${local_filedir}/${local_filename}" ]; then
+        fn_dl_hash
+        if [ "$run" = "run" ]; then
+            . "${local_filedir}/${local_filename}"
+        fi
+    fi
 }
+
 
 # GitHub file download modules.
 # Used to simplify downloading specific files from GitHub.
 
-# github_file_url_dir: the directory of the file in the GitHub: lgsm/modules
+# github_file_url_dir: the directory of the file in the GitHub: fbsdgsm/modules
 # github_file_url_name: the filename of the file to download from GitHub: core_messages.sh
-# github_file_url_dir: the directory of the file in the GitHub: lgsm/modules
+# github_file_url_dir: the directory of the file in the GitHub: fbsdgsm/modules
 # github_file_url_name: the filename of the file to download from GitHub: core_messages.sh
 # githuburl: the full GitHub url
 
@@ -487,19 +481,20 @@ fn_fetch_file_github() {
 	github_file_url_dir="${1}"
 	github_file_url_name="${2}"
 	# For legacy versions - code can be removed at a future date
-	if [ "${legacymode}" = "1" ]; then
-		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
-		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+	## Legacy mode is not supported in freebsdgsm
+	#if [ "${legacymode}" = "1" ]; then
+	#	remote_fileurl="https://raw.fbsdgsm_githubusercontent.com/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/${fbsdgsm_fbsdgsm_githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+	#	remote_fileurl_backup="https://files.frebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
 	# If master branch will currently running LinuxGSM version to prevent "version mixing". This is ignored if a fork.
-	elif [ "${githubbranch}" = "master" ] && [ "${githubuser}" = "GameServerManagers" ] && [ "${commandname}" != "UPDATE-LGSM" ]; then
-		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${version}/${github_file_url_dir}/${github_file_url_name}"
-		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${version}/${github_file_url_dir}/${github_file_url_name}"
+	if [ "${fbsdgsm_fbsdgsm_githubbranch}" = "master" ] && [ "${fbsdgsm_githubuser}" = "t2vee" ] && [ "${commandname}" != "UPDATE-LGSM" ]; then
+		remote_fileurl="https://raw.fbsdgsm_githubusercontent.com/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/${fgsm_version}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl_backup="https://files.frebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
 	else
-		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
-		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl="https://raw.fbsdgsm_githubusercontent.com/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/${fbsdgsm_fbsdgsm_githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl_backup="https://files.frebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
 	fi
 	remote_fileurl_name="GitHub"
-	remote_fileurl_backup_name="Bitbucket"
+	remote_fileurl_backup_name="FreeBSDGSM CDN"
 	local_filedir="${3}"
 	local_filename="${github_file_url_name}"
 	chmodx="${4:-0}"
@@ -513,15 +508,15 @@ fn_fetch_file_github() {
 fn_check_file_github() {
 	github_file_url_dir="${1}"
 	github_file_url_name="${2}"
-	if [ "${githubbranch}" = "master" ] && [ "${githubuser}" = "GameServerManagers" ] && [ "${commandname}" != "UPDATE-LGSM" ]; then
-		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${version}/${github_file_url_dir}/${github_file_url_name}"
-		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${version}/${github_file_url_dir}/${github_file_url_name}"
+	if [ "${fbsdgsm_githubbranch}" = "master" ] && [ "${fbsdgsm_githubuser}" = "t2vee" ] && [ "${commandname}" != "UPDATE-LGSM" ]; then
+		remote_fileurl="https://raw.fbsdgsm_githubusercontent.com/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/${version}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl_backup="https://files.frebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
 	else
-		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
-		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl="https://raw.fbsdgsm_githubusercontent.com/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/${fbsdgsm_githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl_backup="https://files.frebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
 	fi
 	remote_fileurl_name="GitHub"
-	remote_fileurl_backup_name="Bitbucket"
+	remote_fileurl_backup_name="FreeBSDGSM CDN"
 	fn_check_file "${remote_fileurl}" "${remote_fileurl_backup}" "${remote_fileurl_name}" "${remote_fileurl_backup_name}" "${github_file_url_name}"
 }
 
@@ -530,15 +525,15 @@ fn_fetch_config() {
 	github_file_url_dir="${1}"
 	github_file_url_name="${2}"
 	# If master branch will currently running LinuxGSM version to prevent "version mixing". This is ignored if a fork.
-	if [ "${githubbranch}" = "master" ] && [ "${githubuser}" = "GameServerManagers" ] && [ "${commandname}" != "UPDATE-LGSM" ]; then
-		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${version}/${github_file_url_dir}/${github_file_url_name}"
-		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${version}/${github_file_url_dir}/${github_file_url_name}"
+	if [ "${fbsdgsm_githubbranch}" = "master" ] && [ "${fbsdgsm_githubuser}" = "t2vee" ] && [ "${commandname}" != "UPDATE-LGSM" ]; then
+		remote_fileurl="https://raw.fbsdgsm_githubusercontent.com/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/${version}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl_backup="https://files.frebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
 	else
-		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
-		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl="https://raw.fbsdgsm_githubusercontent.com/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/${fbsdgsm_githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl_backup="https://files.frebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
 	fi
 	remote_fileurl_name="GitHub"
-	remote_fileurl_backup_name="Bitbucket"
+	remote_fileurl_backup_name="FreeBSDGSM CDN"
 	local_filedir="${3}"
 	local_filename="${4}"
 	chmodx="nochmodx"
@@ -551,19 +546,19 @@ fn_fetch_config() {
 
 # Fetches modules from the Git repo during first download.
 fn_fetch_module() {
-	github_file_url_dir="lgsm/modules"
+	github_file_url_dir="fbsdgsm/modules"
 	github_file_url_name="${modulefile}"
 	# If master branch will currently running LinuxGSM version to prevent "version mixing". This is ignored if a fork.
-	if [ "${githubbranch}" = "master" ] && [ "${githubuser}" = "GameServerManagers" ] && [ "${commandname}" != "UPDATE-LGSM" ]; then
-		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${version}/${github_file_url_dir}/${github_file_url_name}"
-		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${version}/${github_file_url_dir}/${github_file_url_name}"
+	if [ "${fbsdgsm_githubbranch}" = "master" ] && [ "${fbsdgsm_githubuser}" = "t2vee" ] && [ "${commandname}" != "UPDATE-LGSM" ]; then
+		remote_fileurl="https://raw.fbsdgsm_githubusercontent.com/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/${version}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl_backup="https://files.frebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
 	else
-		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
-		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl="https://raw.fbsdgsm_githubusercontent.com/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/${fbsdgsm_githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl_backup="https://files.frebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
 	fi
 	remote_fileurl_name="GitHub"
-	remote_fileurl_backup_name="Bitbucket"
-	local_filedir="${modulesdir}"
+	remote_fileurl_backup_name="FreeBSDGSM CDN"
+	local_filedir="${fbsdgsm_compat_modulesdir}"
 	local_filename="${github_file_url_name}"
 	chmodx="chmodx"
 	run="run"
@@ -575,19 +570,19 @@ fn_fetch_module() {
 
 # Fetches modules from the Git repo during update-lgsm.
 fn_update_module() {
-	github_file_url_dir="lgsm/modules"
+	github_file_url_dir="fbsdgsm/modules"
 	github_file_url_name="${modulefile}"
 	# If master branch will currently running LinuxGSM version to prevent "version mixing". This is ignored if a fork.
-	if [ "${githubbranch}" = "master" ] && [ "${githubuser}" = "GameServerManagers" ] && [ "${commandname}" != "UPDATE-LGSM" ]; then
-		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${version}/${github_file_url_dir}/${github_file_url_name}"
-		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${version}/${github_file_url_dir}/${github_file_url_name}"
+	if [ "${fbsdgsm_githubbranch}" = "master" ] && [ "${fbsdgsm_githubuser}" = "t2vee" ] && [ "${commandname}" != "UPDATE-LGSM" ]; then
+		remote_fileurl="https://raw.fbsdgsm_githubusercontent.com/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/${version}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl_backup="https://files.frebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
 	else
-		remote_fileurl="https://raw.githubusercontent.com/${githubuser}/${githubrepo}/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
-		remote_fileurl_backup="https://bitbucket.org/${githubuser}/${githubrepo}/raw/${githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl="https://raw.fbsdgsm_githubusercontent.com/${fbsdgsm_githubuser}/${fbsdgsm_githubrepo}/${fbsdgsm_githubbranch}/${github_file_url_dir}/${github_file_url_name}"
+		remote_fileurl_backup="https://files.frebsdgsm.org/${github_file_url_dir}/${github_file_url_name}"
 	fi
 	remote_fileurl_name="GitHub"
-	remote_fileurl_backup_name="Bitbucket"
-	local_filedir="${modulesdir}"
+	remote_fileurl_backup_name="FreeBSDGSM CDN"
+	local_filedir="${fbsdgsm_compat_modulesdir}"
 	local_filename="${github_file_url_name}"
 	chmodx="chmodx"
 	run="norun"
@@ -604,36 +599,37 @@ fn_update_module() {
 # $3 Destination for download.
 # $4 Search string in releases (needed if there are more files that can be downloaded from the release pages).
 fn_dl_latest_release_github() {
-	local githubreleaseuser="${1}"
-	local githubreleaserepo="${2}"
-	local githubreleasedownloadpath="${3}"
-	local githubreleasesearch="${4}"
-	local githublatestreleaseurl="https://api.github.com/repos/${githubreleaseuser}/${githubreleaserepo}/releases/latest"
+    _LOCAL_VAR_githubreleaseuser="${1}"
+    _LOCAL_VAR_githubreleaserepo="${2}"
+    _LOCAL_VAR_githubreleasedownloadpath="${3}"
+    _LOCAL_VAR_githubreleasesearch="${4}"
+    _LOCAL_VAR_githublatestreleaseurl="https://api.github.com/repos/${_LOCAL_VAR_githubreleaseuser}/${_LOCAL_VAR_githubreleaserepo}/releases/latest"
 
-	# Get last github release.
-	# If no search for the release filename is set, just get the first file from the latest release.
-	if [ -z "${githubreleasesearch}" ]; then
-		githubreleaseassets=$(curl -s "${githublatestreleaseurl}" | jq '[ .assets[] ]')
-	else
-		githubreleaseassets=$(curl -s "${githublatestreleaseurl}" | jq "[ .assets[]|select(.browser_download_url | contains(\"${githubreleasesearch}\")) ]")
-	fi
+    # Get last github release.
+    # If no search for the release filename is set, just get the first file from the latest release.
+    if [ -z "${_LOCAL_VAR_githubreleasesearch}" ]; then
+        githubreleaseassets=$(curl -s "${_LOCAL_VAR_githublatestreleaseurl}" | jq '[ .assets[] ]')
+    else
+        githubreleaseassets=$(curl -s "${_LOCAL_VAR_githublatestreleaseurl}" | jq "[ .assets[]|select(.browser_download_url | contains(\"${_LOCAL_VAR_githubreleasesearch}\")) ]")
+    fi
 
-	# Check how many releases we got from the api and exit if we have more then one.
-	if [ "$(echo "${githubreleaseassets}" | jq '. | length')" -gt 1 ]; then
-		fn_print_fatal_nl "Found more than one release to download - Please report this to the LinuxGSM issue tracker"
-		fn_script_log_fatal "Found more than one release to download - Please report this to the LinuxGSM issue tracker"
-	else
-		# Set variables for download via fn_fetch_file.
-		githubreleasefilename=$(echo "${githubreleaseassets}" | jq -r '.[]name')
-		githubreleasedownloadlink=$(echo "${githubreleaseassets}" | jq -r '.[]browser_download_url')
+    # Check how many releases we got from the api and exit if we have more than one.
+    if [ "$(echo "${githubreleaseassets}" | jq '. | length')" -gt 1 ]; then
+        fn_print_fatal_nl "Found more than one release to download - Please report this to the LinuxGSM issue tracker"
+        fn_script_log_fatal "Found more than one release to download - Please report this to the LinuxGSM issue tracker"
+    else
+        # Set variables for download via fn_fetch_file.
+        githubreleasefilename=$(echo "${githubreleaseassets}" | jq -r '.[]name')
+        githubreleasedownloadlink=$(echo "${githubreleaseassets}" | jq -r '.[]browser_download_url')
 
-		# Error if no version is there.
-		if [ -z "${githubreleasefilename}" ]; then
-			fn_print_fail_nl "Cannot get version from GitHub API for ${githubreleaseuser}/${githubreleaserepo}"
-			fn_script_log_fatal "Cannot get version from GitHub API for ${githubreleaseuser}/${githubreleaserepo}"
-		else
-			# Fetch file from the remote location from the existing module to the ${fbsdgsm_compat_tmpdir} for now.
-			fn_fetch_file "${githubreleasedownloadlink}" "" "${githubreleasefilename}" "" "${githubreleasedownloadpath}" "${githubreleasefilename}"
-		fi
-	fi
+        # Error if no version is there.
+        if [ -z "${githubreleasefilename}" ]; then
+            fn_print_fail_nl "Cannot get version from GitHub API for ${_LOCAL_VAR_githubreleaseuser}/${_LOCAL_VAR_githubreleaserepo}"
+            fn_script_log_fatal "Cannot get version from GitHub API for ${_LOCAL_VAR_githubreleaseuser}/${_LOCAL_VAR_githubreleaserepo}"
+        else
+            # Fetch file from the remote location from the existing module to the ${fbsdgsm_compat_tmpdir} for now.
+            fn_fetch_file "${githubreleasedownloadlink}" "" "${githubreleasefilename}" "" "${_LOCAL_VAR_githubreleasedownloadpath}" "${githubreleasefilename}"
+        fi
+    fi
 }
+

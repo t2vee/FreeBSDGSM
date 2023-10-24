@@ -9,45 +9,45 @@
 
 version="v23.5.3"
 fgsm_version="UNSTABLE-rolling"
-shortname="core"
-gameservername="core"
-commandname="CORE"
-rootdir=$(dirname "$(realpath "$0")")
-selfname=$(basename "$(realpath "$0")")
-lgsmdir="${rootdir}/lgsm"
-if [ -n "${LGSM_LOGDIR}" ]; then
-    logdir="${LGSM_LOGDIR}"
-else
-    logdir="${rootdir}/log"
-fi
-lgsmlogdir="${logdir}/lgsm"
-steamcmddir="${HOME}/.steam/steamcmd"
-if [ -n "${LGSM_SERVERFILES}" ]; then
-    serverfiles="${LGSM_SERVERFILES}"
-else
-    serverfiles="${rootdir}/serverfiles"
-fi
-modulesdir="${lgsmdir}/modules"
-tmpdir="${lgsmdir}/tmp"
-if [ -n "${LGSM_DATADIR}" ]; then
-    datadir="${LGSM_DATADIR}"
-else
-    datadir="${lgsmdir}/data"
-fi
-lockdir="${lgsmdir}/lock"
-sessionname="${selfname}"
-if [ -n "${LGSM_CONFIG}" ]; then
-    configdir="${LGSM_CONFIG}"
-else
-    configdir="${lgsmdir}/config-lgsm"
-fi
-serverlist="${datadir}/serverlist.csv"
-serverlistmenu="${datadir}/serverlistmenu.csv"
-[ -n "${LGSM_CONFIG}" ] && configdir="${LGSM_CONFIG}" || configdir="${lgsmdir}/config-lgsm"
-configdirserver="${configdir}/${gameservername}"
-configdirdefault="${lgsmdir}/config-default"
-userinput="${1}"
-userinput2="${2}"
+#shortname="core"
+#gameservername="core"
+#commandname="CORE"
+#rootdir=$(dirname "$(realpath "$0")")
+#selfname=$(basename "$(realpath "$0")")
+#lgsmdir="${rootdir}/lgsm"
+#if [ -n "${LGSM_LOGDIR}" ]; then
+#    logdir="${LGSM_LOGDIR}"
+#else
+#    logdir="${rootdir}/log"
+#fi
+#lgsmlogdir="${logdir}/lgsm"
+#steamcmddir="${HOME}/.steam/steamcmd"
+#if [ -n "${LGSM_SERVERFILES}" ]; then
+#    serverfiles="${LGSM_SERVERFILES}"
+#else
+#    serverfiles="${rootdir}/serverfiles"
+#fi
+#modulesdir="${lgsmdir}/modules"
+#tmpdir="${lgsmdir}/tmp"
+#if [ -n "${LGSM_DATADIR}" ]; then
+#    datadir="${LGSM_DATADIR}"
+#else
+#    datadir="${lgsmdir}/data"
+#fi
+#lockdir="${lgsmdir}/lock"
+#sessionname="${selfname}"
+#if [ -n "${LGSM_CONFIG}" ]; then
+#    configdir="${LGSM_CONFIG}"
+#else
+#    configdir="${lgsmdir}/config-lgsm"
+#fi
+#serverlist="${datadir}/serverlist.csv"
+#serverlistmenu="${datadir}/serverlistmenu.csv"
+#[ -n "${LGSM_CONFIG}" ] && configdir="${LGSM_CONFIG}" || configdir="${lgsmdir}/config-lgsm"
+#configdirserver="${configdir}/${gameservername}"
+#configdirdefault="${lgsmdir}/config-default"
+#userinput="${1}"
+#userinput2="${2}"
 
 
 ## FREEBSDGSM COMPAT SETTINGS
@@ -94,6 +94,39 @@ fbsdgsm_compat_configdirdefault="${fbsdgsm_compat_lgsmdir}/config-default"
 fbsdgsm_compat_userinput="${1}"
 fbsdgsm_compat_wildcard_userinput="$*"
 fbsdgsm_compat_userinput2="${2}"
+
+
+## Extra global variable declaration
+shortname="${fbsdgsm_compat_shortname}"
+gameservername="${fbsdgsm_compat_gameservername}"
+commandname="${fbsdgsm_compat_commandname}"
+rootdir="${fbsdgsm_compat_rootdir}"
+selfname="${fbsdgsm_compat_selfname}"
+lgsmdir="${fbsdgsm_compat_lgsmdir}"
+lgsmlogdir="${fbsdgsm_compat_lgsmlogdir}"
+steamcmddir="${fbsdgsm_compat_steamcmddir}"
+serverfiles="${fbsdgsm_compat_serverfiles}"
+modulesdir="${fbsdgsm_compat_modulesdir}"
+tmpdir="${fbsdgsm_compat_tmpdir}"
+datadir="${fbsdgsm_compat_datadir}"
+lockdir="${fbsdgsm_compat_lockdir}"
+sessionname="${fbsdgsm_compat_sessionname}"
+serverlist="${fbsdgsm_compat_serverlist}"
+serverlistmenu="${fbsdgsm_compat_serverlistmenu}"
+configdirserver="${fbsdgsm_compat_configdirserver}"
+configdirdefault="${fbsdgsm_compat_configdirdefault}"
+userinput="${fbsdgsm_compat_userinput}"
+userinput2="${fbsdgsm_compat_userinput2}"
+
+# logdir and configdir are special cases, they may depend on environment variables
+# So, you can use conditional statements if needed for these
+if [ -n "${FBSD_COMPAT_LGSM_LOGDIR}" ]; then
+    logdir="${FBSD_COMPAT_LGSM_LOGDIR}"
+fi
+if [ -n "${FBSD_COMPAT_LGSM_CONFIG}" ]; then
+    configdir="${FBSD_COMPAT_LGSM_CONFIG}"
+fi
+
 
 if [ -n "${PROD}" ]; then
     prod="${PROD}"
